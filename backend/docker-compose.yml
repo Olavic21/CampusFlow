@@ -46,11 +46,6 @@ services:
 volumes:
   postgres_data:
 
-# Installation des dépendances de test
-pip install -r requirements.txt
-
-# Lancer les tests 
-pytest tests/ -v
 # To run tests locally:
 # pip install -r requirements.txt
 # pytest tests/ -v

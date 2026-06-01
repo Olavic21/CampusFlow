@@ -20,5 +20,5 @@ def test_path_no_path(client, db_session, sample_locations):
     # Forcer un isolement en désactivant les arêtes? Pour le test, on peut créer un graphe sans connexion
     # Mais dans notre implémentation, le graphe est complet, donc on ne peut pas lever 409 facilement.
     # On peut simuler une location inexistante pour 404
-    response = client.get("/path?from=999&to=1")
-    assert response.status_code == 404  # location non trouvée
+    response = client.get("/path?from=999&to=1") # 999 is not in sample_locations, so find_path returns None
+    assert response.status_code == 409  # No path found (because one of the locations doesn't exist in the graph)

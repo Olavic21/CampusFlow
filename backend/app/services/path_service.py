@@ -30,6 +30,9 @@ def haversine(lat1, lon1, lat2, lon2):
 
 def find_path(db: Session, from_id: int, to_id: int, avoid_congestion: bool, congestion_service):
     G = build_graph(db)  # À optimiser avec cache
+    if from_id not in G or to_id not in G:
+        return None
+        
     if avoid_congestion:
         # Modifier les poids selon congestion (ex: pénalité +50% si congestion élevée)
         congestion_data = congestion_service.get_congestion(db)

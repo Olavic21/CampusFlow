@@ -2,8 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import locations, congestion, flux, path, predict, feedbacks, dashboard
 from app.utils.errors import http_exception_handler
-from app.database.session import engine
-from app.database.models import Base
 
 app = FastAPI(title="CampusFlow Lite API", version="1.0")
 
@@ -18,9 +16,6 @@ app.add_middleware(
 
 # Gestionnaire d'erreurs global
 app.add_exception_handler(HTTPException, http_exception_handler)
-
-# Création des tables (dev)
-Base.metadata.create_all(bind=engine)
 
 # Routers
 app.include_router(locations.router)

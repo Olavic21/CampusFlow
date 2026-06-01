@@ -14,12 +14,27 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db?check_same_thread=False"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Register date_trunc for SQLite
+def _sqlite_date_trunc(part, date_str):
+    # This is a simplified implementation for testing purposes
+    # In a real scenario, you might need a more robust solution
+    # or use a different test database.
+    # SQLite stores datetime as strings, so we parse and format
+    dt = datetime.fromisoformat(date_str.replace('Z', '+00:00')) # Handle 'Z' for UTC
+    if part == 'hour':
+        return dt.replace(minute=0, second=0, microsecond=0).isoformat()
+    elif part == 'day':
+        return dt.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    # Add other granularities as needed
+    return date_str
+
 # Fixture pour la DB
 @pytest.fixture(scope="function")
 def db_session():
     # Création des tables
     Base.metadata.create_all(bind=engine)
     session = TestingSessionLocal()
+    session.connection().connection.create_function("date_trunc", 2, _sqlite_date_trunc) # Register for this connection
     try:
         yield session
     finally:
@@ -40,13 +55,11 @@ def client(db_session):
     app.dependency_overrides.clear()
 
 # Mock Redis
-@pytest.fixture(autouse=True)
-def mock_redis():
-    fake_redis = FakeRedis()
-    original_client = redis_client.client
-    redis_client.client = fake_redis
-    yield fake_redis
-    redis_client.client = original_client
+@pytest.fixture(autouse=True, scope="function")
+def mock_redis(monkeypatch):
+    fake_redis = FakeRedis(decode_responses=True)
+    monkeypatch.setattr("app.services.congestion_service.redis_client", fake_redis)
+    return fake_redis
 
 # Fixture de données de base
 @pytest.fixture(scope="function")
@@ -71,8 +84,8 @@ def sample_flux(db_session, sample_locations):
     for i, loc in enumerate(sample_locations):
         if not loc.is_active:
             continue
-        for h in range(-2, 0):
-            ts = now + timedelta(hours=h)
+        for m in range(-4, 0, 2):  # Use minutes instead of hours for live flux tests
+            ts = now + timedelta(minutes=m)
             flux = Flux(
                 location_id=loc.id,
                 timestamp=ts,

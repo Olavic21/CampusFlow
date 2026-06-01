@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.database.session import get_db
 from app.services.flux_service import get_live_flux, get_flux_history
 from app.schemas.flux import FluxLiveResponse, FluxHistoryResponse

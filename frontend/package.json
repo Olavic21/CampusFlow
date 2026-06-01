@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "leaflet": "^1.9.4",
+    "leaflet.offline": "^3.2.1",
+    "localforage": "^1.10.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-leaflet": "^5.0.0"

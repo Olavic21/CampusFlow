@@ -2,19 +2,17 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 
-class FeedbackBase(BaseModel):
-    location_id: int
-    content: str
-    rating: int  # 1-5
-    student_hash: Optional[str] = None
 
-class FeedbackOut(FeedbackBase):
+class FeedbackOut(BaseModel):
     id: int
+    etudiant_id: int
+    texte: str
     sentiment: str
-    created_at: datetime
+    timestamp: datetime
 
     class Config:
         from_attributes = True
+
 
 class FeedbackListResponse(BaseModel):
     total: int

@@ -6,11 +6,10 @@ from app.schemas.location import LocationOut
 
 router = APIRouter(prefix="/locations", tags=["locations"])
 
+
 @router.get("", response_model=list[LocationOut])
 def get_locations(
-    type: str = Query(None),
-    active: bool = Query(True),
-    db: Session = Depends(get_db)
+    type: str = Query(None, description="Filtrer par type de salle"),
+    db: Session = Depends(get_db),
 ):
-    locations = get_all_locations(db, type, active)
-    return locations
+    return get_all_locations(db, type)

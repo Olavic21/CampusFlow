@@ -35,6 +35,12 @@ def get_flux_history(db: Session, location_id: int, from_date: datetime, to_date
              Flux.timestamp.between(from_date, to_date))\
      .group_by("interval").order_by("interval")
 
-    data = [{"timestamp": row.interval.isoformat(), "count": int(row.count),
-             "entries": int(row.entries), "exits": int(row.exits)} for row in q.all()]
+    data = []
+    for row in q.all():
+        # Handle SQLite returning strings from date_trunc instead of datetime objects
+        ts = row.interval.isoformat() if hasattr(row.interval, 'isoformat') else row.interval
+        data.append({
+            "timestamp": ts, "count": int(row.count),
+            "entries": int(row.entries), "exits": int(row.exits)
+        })
     return data

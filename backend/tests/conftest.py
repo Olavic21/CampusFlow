@@ -1,13 +1,20 @@
+import os
+# Initialize environment variables needed for application configuration during tests
+os.environ.setdefault("CORS_ORIGINS", "http://localhost:3000")
+os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
+
 import pytest
+from datetime import datetime
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fakeredis import FakeRedis
+
+# Application imports are sensitive to environment variables and must happen after setup
 from app.main import app
 from app.database.session import get_db
 from app.database.models import Base
 from app.utils.redis_client import redis_client
-import os
 
 # Base de données de test en mémoire
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db?check_same_thread=False"
@@ -58,7 +65,8 @@ def client(db_session):
 @pytest.fixture(autouse=True, scope="function")
 def mock_redis(monkeypatch):
     fake_redis = FakeRedis(decode_responses=True)
-    monkeypatch.setattr("app.services.congestion_service.redis_client", fake_redis)
+    # Patch the singleton source so that all modules (including tests) use the mock
+    monkeypatch.setattr("app.utils.redis_client.redis_client", fake_redis)
     return fake_redis
 
 # Fixture de données de base
@@ -84,7 +92,7 @@ def sample_flux(db_session, sample_locations):
     for i, loc in enumerate(sample_locations):
         if not loc.is_active:
             continue
-        for m in range(-4, 0, 2):  # Use minutes instead of hours for live flux tests
+        for m in range(0, 1):  # Use 'now' to fall within the strict 1-minute congestion window
             ts = now + timedelta(minutes=m)
             flux = Flux(
                 location_id=loc.id,

@@ -62,7 +62,6 @@ typing_extensions/_t.py
 docker-compose.override.yml
 *.local
 .env
-.env.example
 
 # Jupyter
 .ipynb_checkpoints/

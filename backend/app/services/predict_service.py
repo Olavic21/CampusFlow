@@ -2,16 +2,17 @@ import joblib
 import numpy as np
 import os
 from datetime import datetime
+from app.config import settings
 from app.database.models import Location
 from sqlalchemy.orm import Session
 
-MODEL_PATH = os.getenv("ML_MODEL_PATH", "/ml/model.pkl")
 model = None
 
 def load_model():
     global model
-    if model is None and os.path.exists(MODEL_PATH):
-        model = joblib.load(MODEL_PATH)
+    path = settings.ML_MODEL_PATH
+    if model is None and os.path.exists(path):
+        model = joblib.load(path)
     return model
 
 def predict_congestion(db: Session, location_id: int, dt: datetime, event_type: str):

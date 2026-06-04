@@ -138,7 +138,12 @@ export default function AvatarEditorModal({
           <div className="p-4 overflow-y-auto sidebar-scroll flex-1">
             {step === 'menu' && (
               <div className="flex flex-col items-center gap-4">
-                <UserAvatar user={user} size={96} animate />
+                <UserAvatar
+                  user={user}
+                  size={96}
+                  animate
+                  srcOverride={previewSrc || undefined}
+                />
                 <p className="font-semibold text-slate-800 dark:text-white">{user?.full_name}</p>
                 <p className="text-sm text-slate-500">{user?.email}</p>
 

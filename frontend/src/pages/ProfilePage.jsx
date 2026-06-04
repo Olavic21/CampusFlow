@@ -13,9 +13,11 @@ import {
   removeFavoriteRoute,
   getPreferences,
   updatePreferences,
+  persistSession,
+  getStoredTokens,
+  fetchMe,
 } from '../services/authApi';
 import { uploadAvatar, deleteAvatar } from '../services/profileApi';
-import { persistSession, getStoredTokens } from '../services/authApi';
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -69,18 +71,35 @@ export default function ProfilePage({
 
   const syncUser = useCallback(
     (profile) => {
-      setUser(profile);
-      const { access, refresh } = getStoredTokens();
-      if (access && refresh) {
-        persistSession({
-          access_token: access,
-          refresh_token: refresh,
-          user: profile,
-        });
-      }
+      if (!profile) return;
+      setUser((prev) => {
+        const next = {
+          ...prev,
+          ...profile,
+          avatar: Object.prototype.hasOwnProperty.call(profile, 'avatar')
+            ? profile.avatar
+            : prev?.avatar,
+        };
+        const { access, refresh } = getStoredTokens();
+        if (access && refresh) {
+          persistSession({
+            access_token: access,
+            refresh_token: refresh,
+            user: next,
+          });
+        }
+        return next;
+      });
     },
     [setUser],
   );
+
+  useEffect(() => {
+    if (!user?.id) return;
+    fetchMe()
+      .then((me) => syncUser(me))
+      .catch(() => {});
+  }, [user?.id, syncUser]);
 
   const handleAvatarUpload = useCallback(
     async (blob) => {
@@ -88,6 +107,12 @@ export default function ProfilePage({
       try {
         const profile = await uploadAvatar(blob);
         syncUser(profile);
+        try {
+          const me = await fetchMe();
+          syncUser(me);
+        } catch {
+          /* garde la réponse upload */
+        }
         onToast?.('success', 'Photo mise à jour avec succès');
       } catch (err) {
         onToast?.('error', err.message || 'Erreur lors de l\'envoi');
@@ -161,7 +186,13 @@ export default function ProfilePage({
     <div className="flex-1 overflow-y-auto sidebar-scroll p-4 md:p-8 max-w-2xl mx-auto w-full">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <section className="cf-menu-card p-6 mb-6 flex flex-col items-center text-center">
-          <UserAvatar user={user} size={96} animate onClick={() => setAvatarOpen(true)} />
+          <UserAvatar
+            key={user.avatar || `profile-${user.id}`}
+            user={user}
+            size={96}
+            animate
+            onClick={() => setAvatarOpen(true)}
+          />
           <h1 className="text-xl font-bold text-slate-900 dark:text-white mt-4">
             {user.full_name}
           </h1>

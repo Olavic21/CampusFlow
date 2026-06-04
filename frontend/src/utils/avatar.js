@@ -8,14 +8,46 @@ export function getInitials(name, username) {
   return source.slice(0, 2).toUpperCase();
 }
 
-/** Résout l'URL d'affichage (proxy /media en dev, Capacitor-ready) */
-export function getAvatarUrl(avatar) {
-  if (!avatar) return null;
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-    return avatar;
+const BACKEND_DIRECT = (import.meta.env.VITE_BACKEND_DIRECT || 'http://127.0.0.1:8000').replace(
+  /\/$/,
+  '',
+);
+
+function appendCacheBust(url, key) {
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}cb=${encodeURIComponent(key)}`;
+}
+
+/**
+ * Résout l'URL d'affichage (proxy /media en dev, backend direct en secours).
+ * @param {string | null | undefined} avatar
+ * @param {{ bustCache?: boolean, preferDirect?: boolean }} [opts]
+ */
+export function getAvatarUrl(avatar, opts = {}) {
+  const { bustCache = true, preferDirect = false } = opts;
+  if (!avatar || typeof avatar !== 'string') return null;
+
+  let path = avatar.trim();
+  if (!path) return null;
+
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return bustCache ? appendCacheBust(path, path) : path;
   }
-  if (avatar.startsWith('/')) return avatar;
-  return `/media/${avatar.replace(/^\//, '')}`;
+
+  if (!path.startsWith('/')) {
+    path = path.startsWith('media/') ? `/${path}` : `/media/${path.replace(/^\//, '')}`;
+  } else if (!path.startsWith('/media/') && path.startsWith('/avatars/')) {
+    path = `/media${path}`;
+  }
+
+  const base = preferDirect ? BACKEND_DIRECT : '';
+  const url = `${base}${path}`;
+  return bustCache ? appendCacheBust(url, path) : url;
+}
+
+/** URL directe vers le backend (si le proxy /media échoue). */
+export function getAvatarUrlDirect(avatar) {
+  return getAvatarUrl(avatar, { preferDirect: true });
 }
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

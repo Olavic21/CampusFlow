@@ -27,7 +27,7 @@ function UserMenu({ user, onProfile, onLogout, compact }) {
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <UserAvatar user={user} size={36} />
+        <UserAvatar key={user.avatar || `u-${user.id}`} user={user} size={36} />
         {!compact && (
           <>
             <div className="flex-1 text-left min-w-0">
@@ -52,7 +52,7 @@ function UserMenu({ user, onProfile, onLogout, compact }) {
             role="menu"
           >
             <div className="px-3 py-2 flex items-center gap-3 border-b border-slate-100 dark:border-slate-700/50 mb-1">
-              <UserAvatar user={user} size={40} />
+              <UserAvatar key={user.avatar || `u-${user.id}-menu`} user={user} size={40} />
               <div className="min-w-0">
                 <p className="text-sm font-semibold truncate">{user.full_name || user.username}</p>
                 <p className="text-xs text-slate-500 truncate">{user.email}</p>

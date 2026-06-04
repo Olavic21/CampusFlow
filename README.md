@@ -28,12 +28,26 @@ Produit : `campus.json` (38 bâtiments), `capteurs.json`, `frequentation.csv`, `
 ### 2. Backend (SQLite — sans Docker)
 
 ```bash
-cd backend
+# À la racine du projet (avec le venv activé)
 pip install -r requirements.txt
+
+cd backend
 copy .env.example .env          # Windows
 python -m app.utils.seed        # Charge 38 bâtiments + flux récents
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
+**Si l'inscription affiche « délai dépassé »** : le processus sur le port 8000 est souvent bloqué. Redémarrez l'API :
+
+```powershell
+# Si erreur « No module named bcrypt » une seule fois :
+.\scripts\install-backend-deps.ps1
+
+# Puis demarrer l'API :
+.\scripts\restart-backend.ps1
+```
+
+Puis vérifiez : http://127.0.0.1:8000/health doit répondre `{"status":"ok"}` en moins d'une seconde.
 
 - API : http://127.0.0.1:8000
 - Swagger : http://127.0.0.1:8000/docs
@@ -72,8 +86,41 @@ python scripts/verify_api.py
 | `GET /dashboard/stats` | Stats globales |
 | `POST /predict` | Prédiction ML |
 | `GET /feedbacks` | Retours étudiants |
+| `POST /auth/register` | Inscription (JWT) |
+| `POST /auth/login` | Connexion |
+| `POST /auth/logout` | Déconnexion |
+| `GET /auth/me` | Profil utilisateur connecté |
+| `POST /auth/refresh` | Renouveler les tokens |
+| `GET /users/favorites/locations` | Favoris bâtiments |
+| `GET /users/routes/history` | Historique itinéraires |
 
 > Pas de préfixe `/api` côté backend. Le frontend utilise `/api` via proxy Vite.
+
+### Authentification
+
+1. Copier `backend/.env.example` → `backend/.env` et définir `JWT_SECRET`.
+2. Au démarrage, FastAPI crée les tables `users`, `user_preferences`, `favorite_*`, `route_history`.
+3. Le frontend stocke `access_token` / `refresh_token` dans `localStorage` pour rester connecté.
+4. Pages **Connexion** / **Inscription** (Framer Motion) ; menu utilisateur avec avatar et **Déconnexion**.
+5. Dev sans auth : `VITE_SKIP_AUTH=true` dans `frontend/.env`.
+
+Les logs auth s'affichent dans la console backend (`Registration started`, `Login success`, etc.).
+
+### Photo de profil
+
+- `GET /profile` — profil complet
+- `POST /profile/avatar` — upload (JPG/PNG/WebP, max 5 Mo, compression WebP)
+- `DELETE /profile/avatar` — suppression
+- Fichiers servis sous `/media/avatars/`
+
+Installer Pillow : `pip install Pillow` (inclus dans `requirements.txt`).
+
+### Performances
+
+- Cache API : bâtiments (120 s), congestion (30 s), health check frontend (20 s).
+- Dijkstra : file de priorité (tas) au lieu d'un scan linéaire.
+- Occupation : couleurs/statuts pré-calculés via `useMemo`.
+- Marqueurs carte : `React.memo` avec comparateur ciblé.
 
 ---
 

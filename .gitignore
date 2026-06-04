@@ -1,3 +1,7 @@
+# Avatars uploadés (garder le dossier via .gitkeep)
+media/avatars/*
+!media/avatars/.gitkeep
+
 # Python
 __pycache__/
 *.py[cod]

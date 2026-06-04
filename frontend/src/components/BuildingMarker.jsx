@@ -1,65 +1,106 @@
+import { memo, useMemo } from 'react';
 import { CircleMarker, Marker } from 'react-leaflet';
 import L from 'leaflet';
-import { getCongestionLevel, getMarkerRadius, getBuildingIcon } from '../utils/congestionColor';
+import { getCongestionLevel, getMarkerRadius } from '../utils/congestionColor';
+import { createPremiumMarkerHtml } from '../utils/markerHtml.jsx';
 
-function pulseClass(level) {
-  if (level === 'modere') return 'marker-pulse-slow';
-  if (level === 'charge') return 'marker-pulse-fast';
-  if (level === 'sature') return 'marker-pulse-flash';
-  return '';
-}
-
-export default function BuildingMarker({
+function BuildingMarker({
   building,
   occupancy,
   onSelect,
   heatmapOnly = false,
   visible = true,
+  selected = false,
+  onRoute = false,
+  dimmed = false,
+  navigationMode = false,
 }) {
   if (!visible) return null;
 
-  const { count = 0, taux = 0 } = occupancy[building.id] || {};
-  const { color, label, level } = getCongestionLevel(taux);
+  const occ = occupancy[building.id] || {};
+  const count = occ.count ?? 0;
+  const taux = occ.taux ?? 0;
+  const levelInfo = occ.color
+    ? { color: occ.color, label: occ.label, level: occ.level }
+    : getCongestionLevel(taux);
+  const { color, label, level } = levelInfo;
   const radius = getMarkerRadius(building.capacite);
-  const icon = getBuildingIcon(building);
-  const pulse = pulseClass(level);
+  const size = onRoute || selected ? Math.max(48, radius * 3.5) : Math.max(40, radius * 3.2);
+  const isDimmed = navigationMode && dimmed && !onRoute && !selected;
 
   const ariaLabel = `${building.nom} — ${Math.round(taux * 100)}% occupé (${count}/${building.capacite}) — ${label}`;
 
+  const markerIcon = useMemo(
+    () =>
+      L.divIcon({
+        className: 'building-marker-icon',
+        html: createPremiumMarkerHtml(building, {
+          color,
+          level: isDimmed ? null : level,
+          selected: selected || onRoute,
+          dimmed: isDimmed,
+          size,
+        }),
+        iconSize: [size, size + 8],
+        iconAnchor: [size / 2, size + 6],
+      }),
+    [building, color, level, selected, onRoute, isDimmed, size],
+  );
+
+  const handleClick = useMemo(
+    () => ({ click: () => onSelect?.(building) }),
+    [building, onSelect],
+  );
+
+  const heatOpacity = isDimmed ? 0.06 : heatmapOnly ? 0.35 : 0.12;
+
   return (
     <>
-      {/* Heatmap glow */}
       <CircleMarker
         center={[building.latitude, building.longitude]}
         radius={radius * 2}
         pathOptions={{
           color: 'transparent',
           fillColor: color,
-          fillOpacity: heatmapOnly ? 0.35 : 0.15,
+          fillOpacity: heatOpacity,
           weight: 0,
         }}
-        eventHandlers={{ click: () => onSelect?.(building) }}
+        eventHandlers={handleClick}
       />
 
       {!heatmapOnly && (
         <Marker
           position={[building.latitude, building.longitude]}
-          icon={L.divIcon({
-            className: 'building-marker-icon',
-            html: `
-              <div class="building-marker ${pulse}" role="img" aria-label="${ariaLabel}"
-                style="--marker-color:${color}; width:${radius * 2.5}px; height:${radius * 2.5}px;">
-                <div class="building-marker-inner" style="background:${color}; width:${radius * 2}px; height:${radius * 2}px;">
-                  <span class="building-marker-emoji">${icon}</span>
-                </div>
-              </div>
-            `,
-            iconSize: [radius * 2.5, radius * 2.5],
-            iconAnchor: [radius * 1.25, radius * 1.25],
-          })}
-          eventHandlers={{ click: () => onSelect?.(building) }}
+          icon={markerIcon}
+          eventHandlers={handleClick}
+          alt={ariaLabel}
+          zIndexOffset={onRoute || selected ? 1000 : isDimmed ? 0 : 100}
         />
       )}
     </>
   );
 }
+
+function propsAreEqual(prev, next) {
+  if (prev.building.id !== next.building.id) return false;
+  if (
+    prev.heatmapOnly !== next.heatmapOnly ||
+    prev.visible !== next.visible ||
+    prev.selected !== next.selected ||
+    prev.onRoute !== next.onRoute ||
+    prev.dimmed !== next.dimmed ||
+    prev.navigationMode !== next.navigationMode
+  ) {
+    return false;
+  }
+  const p = prev.occupancy[prev.building.id];
+  const n = next.occupancy[next.building.id];
+  return (
+    p?.count === n?.count &&
+    p?.taux === n?.taux &&
+    p?.color === n?.color &&
+    p?.level === n?.level
+  );
+}
+
+export default memo(BuildingMarker, propsAreEqual);

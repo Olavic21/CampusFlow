@@ -1,11 +1,38 @@
 /**
- * Client API CampusFlow — aligné sur backend FastAPI (pas de préfixe /api).
- * En dev, Vite proxy redirige /api → http://localhost:8000
+ * Client API CampusFlow — aligné sur backend FastAPI.
+ * En dev, le proxy Vite redirige /api → http://127.0.0.1:8000
  */
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 8000;
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 400;
+const HEALTH_CACHE_MS = 20000;
+const LOCATIONS_CACHE_MS = 120000;
 
-async function request(path, options = {}) {
+let healthCache = { at: 0, ok: null };
+let locationsCache = { at: 0, key: '', data: null };
+
+export class ApiError extends Error {
+  constructor(message, { status = null, cause = null } = {}) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.cause = cause;
+  }
+}
+
+function isRetryable(err) {
+  if (err?.name === 'AbortError') return true;
+  if (err instanceof ApiError && err.status >= 500) return true;
+  if (err instanceof TypeError) return true; // réseau
+  return false;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function request(path, options = {}, attempt = 0) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -14,8 +41,20 @@ async function request(path, options = {}) {
       signal: controller.signal,
       headers: { Accept: 'application/json', ...options.headers },
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      throw new ApiError(`HTTP ${res.status}`, { status: res.status });
+    }
     return res.json();
+  } catch (err) {
+    if (attempt < MAX_RETRIES && isRetryable(err)) {
+      await delay(RETRY_DELAY_MS * (attempt + 1));
+      return request(path, options, attempt + 1);
+    }
+    if (err?.name === 'AbortError') {
+      throw new ApiError('Délai dépassé — serveur injoignable', { cause: err });
+    }
+    if (err instanceof ApiError) throw err;
+    throw new ApiError('Erreur réseau', { cause: err });
   } finally {
     clearTimeout(timer);
   }
@@ -26,8 +65,18 @@ export async function checkHealth() {
 }
 
 export async function fetchLocations(type = null) {
+  const key = type || 'all';
+  if (
+    locationsCache.data &&
+    locationsCache.key === key &&
+    Date.now() - locationsCache.at < LOCATIONS_CACHE_MS
+  ) {
+    return locationsCache.data;
+  }
   const q = type ? `?type=${encodeURIComponent(type)}` : '';
-  return request(`/locations${q}`);
+  const data = await request(`/locations${q}`);
+  locationsCache = { at: Date.now(), key, data };
+  return data;
 }
 
 export async function fetchLiveFlux(window = 60) {
@@ -65,10 +114,20 @@ export async function fetchDashboardStats(period = 'week') {
 }
 
 export async function isApiAvailable() {
+  if (Date.now() - healthCache.at < HEALTH_CACHE_MS && healthCache.ok !== null) {
+    return healthCache.ok;
+  }
   try {
     await checkHealth();
+    healthCache = { at: Date.now(), ok: true };
     return true;
   } catch {
+    healthCache = { at: Date.now(), ok: false };
     return false;
   }
+}
+
+export function invalidateApiCache() {
+  healthCache = { at: 0, ok: null };
+  locationsCache = { at: 0, key: '', data: null };
 }

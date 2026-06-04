@@ -26,9 +26,18 @@ def get_congestion(db: Session, location_id: int = None) -> list[dict]:
         if cached:
             return [json.loads(cached)]
     else:
-        keys = redis_client.keys("congestion:*")
-        if keys:
-            return [json.loads(redis_client.get(k)) for k in keys if redis_client.get(k)]
+        try:
+            cached_list = []
+            scan = getattr(redis_client, "scan_iter", None)
+            if callable(scan):
+                for key in scan("congestion:*", count=50):
+                    raw = redis_client.get(key)
+                    if raw:
+                        cached_list.append(json.loads(raw))
+            if cached_list:
+                return cached_list
+        except Exception:
+            pass
 
     # ── Calcul depuis PostgreSQL ──────────────────────────────────────────────
     since = datetime.utcnow() - timedelta(minutes=5)

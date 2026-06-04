@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, memo } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, ScaleControl, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -6,10 +6,11 @@ import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 import 'leaflet-defaulticon-compatibility';
 
 import BuildingMarker from './BuildingMarker';
-import BuildingPopup from './BuildingPopup';
 import MapLegend from './MapLegend';
 import CampusHUD from './CampusHUD';
-import { getCongestionLevel } from '../utils/congestionColor';
+import NavigationHUD from './navigation/NavigationHUD';
+import RouteLegend from './routes/RouteLegend';
+import { filterBuildings } from '../utils/filterBuildings';
 
 const CENTER = [3.8691, 11.5083];
 const ZOOM = 18;
@@ -18,6 +19,20 @@ const BOUNDS = L.latLngBounds([3.868359, 11.507055], [3.870386, 11.509945]);
 const OSM = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const DARK = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
+const startIcon = L.divIcon({
+  className: 'cf-route-pin',
+  html: '<div class="cf-route-pin-inner cf-route-start cf-route-pulse"></div>',
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+});
+
+const endIcon = L.divIcon({
+  className: 'cf-route-pin',
+  html: '<div class="cf-route-pin-inner cf-route-end cf-route-pulse"></div>',
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+});
+
 function MapResizer() {
   const map = useMap();
   useEffect(() => {
@@ -25,17 +40,21 @@ function MapResizer() {
     fix();
     const t = setTimeout(fix, 200);
     window.addEventListener('resize', fix);
-    return () => { clearTimeout(t); window.removeEventListener('resize', fix); };
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('resize', fix);
+    };
   }, [map]);
   return null;
 }
 
-function CustomZoomControl() {
+function CustomZoomControl({ hidden }) {
   const map = useMap();
   useEffect(() => {
+    if (hidden) return undefined;
     const control = L.control({ position: 'topright' });
     control.onAdd = () => {
-      const div = L.DomUtil.create('div', 'custom-zoom-control');
+      const div = L.DomUtil.create('div', 'custom-zoom-control cf-glass');
       div.innerHTML = `
         <button type="button" data-action="in" aria-label="Zoom avant">+</button>
         <button type="button" data-action="out" aria-label="Zoom arrière">−</button>
@@ -47,110 +66,118 @@ function CustomZoomControl() {
     };
     control.addTo(map);
     return () => control.remove();
-  }, [map]);
+  }, [map, hidden]);
   return null;
 }
 
-function MapController({ flyToBuilding, selectedBuilding }) {
+function MapFlyController({ flyToBuilding, flyToCoords }) {
   const map = useMap();
   useEffect(() => {
-    if (flyToBuilding) {
+    if (flyToBuilding?.latitude != null) {
       map.flyTo([flyToBuilding.latitude, flyToBuilding.longitude], 19, { duration: 0.8 });
     }
   }, [flyToBuilding, map]);
-  return null;
-}
-
-function PopupLayer({ building, occupancy, currentHour, onNavigate, onHistory, onClose }) {
-  const map = useMap();
-  const popupRef = useRef(null);
-
   useEffect(() => {
-    if (!building) return;
-    const popup = L.popup({
-      closeButton: true,
-      minWidth: 280,
-      className: 'building-custom-popup',
-      offset: [0, -10],
-    })
-      .setLatLng([building.latitude, building.longitude])
-      .setContent('<div id="building-popup-root"></div>')
-      .openOn(map);
-
-    popupRef.current = popup;
-
-    import('react-dom/client').then(({ createRoot }) => {
-      const el = document.getElementById('building-popup-root');
-      if (!el) return;
-      const root = createRoot(el);
-      root.render(
-        <BuildingPopup
-          building={building}
-          occupancy={occupancy}
-          currentHour={currentHour}
-          onNavigate={(b) => { onNavigate(b); popup.close(); }}
-          onHistory={(b) => { onHistory(b); popup.close(); }}
-        />
-      );
-      popup.on('remove', () => root.unmount());
-    });
-
-    return () => { map.closePopup(popup); };
-  }, [building, map, occupancy, currentHour, onNavigate, onHistory]);
-
+    if (flyToCoords?.length === 2) {
+      map.flyTo(flyToCoords, 19, { duration: 0.6 });
+    }
+  }, [flyToCoords, map]);
   return null;
 }
 
-export default function CampusMap({
+function FitPathBounds({ coordsList, active }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!active) return;
+    const allCoords = coordsList?.filter((c) => c?.length >= 2) ?? [];
+    if (!allCoords.length) return;
+
+    const bounds = L.latLngBounds(allCoords);
+    map.fitBounds(bounds, {
+      padding: [100, 100],
+      maxZoom: 19,
+      animate: true,
+      duration: 1.2,
+    });
+  }, [coordsList, active, map]);
+  return null;
+}
+
+function CampusMap({
   buildings,
   occupancy,
   globalStats,
   offline,
   formattedTime,
   filters,
-  pathResult,
+  routes = [],
+  activeRouteId,
+  routeMode = 'single',
   darkMode,
   flyToBuilding,
+  flyToCoords,
   selectedBuilding,
   onBuildingSelect,
-  onNavigate,
-  onHistory,
   mapRef,
+  navigationMode = false,
+  onExitNavigation,
+  guideStepIndex = 0,
+  guideSteps = [],
+  pathIdsOnMap = new Set(),
+  onSelectRoute,
+  onRemoveRoute,
 }) {
-  const [popupBuilding, setPopupBuilding] = useState(null);
+  const filteredBuildings = useMemo(
+    () => filterBuildings(buildings, filters, occupancy),
+    [buildings, filters, occupancy],
+  );
 
-  const filteredBuildings = useMemo(() => {
-    return buildings.filter((b) => {
-      if (!filters.types.includes(b.type)) return false;
-      const taux = occupancy[b.id]?.taux ?? 0;
-      const { level } = getCongestionLevel(taux);
-      if (filters.congestion === 'disponible' && level !== 'disponible') return false;
-      if (filters.congestion === 'charge' && level !== 'charge') return false;
-      if (filters.congestion === 'sature' && level !== 'sature') return false;
-      return true;
+  const handleSelect = useCallback(
+    (building) => {
+      try {
+        onBuildingSelect?.(building);
+      } catch (e) {
+        console.error('[CampusFlow] building select', e);
+      }
+    },
+    [onBuildingSelect],
+  );
+
+  const displayRoutes = useMemo(() => {
+    if (navigationMode && activeRouteId) {
+      return routes.filter((r) => r.id === activeRouteId);
+    }
+    if (routeMode === 'compare') return routes;
+    const last = routes[routes.length - 1];
+    return last ? [last] : [];
+  }, [routes, navigationMode, activeRouteId, routeMode]);
+
+  const pathIds = useMemo(() => {
+    if (pathIdsOnMap?.size) return pathIdsOnMap;
+    const ids = new Set();
+    displayRoutes.forEach((r) => r.result?.path?.forEach((id) => ids.add(id)));
+    return ids;
+  }, [pathIdsOnMap, displayRoutes]);
+
+  const fitCoords = useMemo(() => {
+    const flat = [];
+    displayRoutes.forEach((r) => {
+      r.result?.coords?.forEach((c) => flat.push(c));
     });
-  }, [buildings, filters, occupancy]);
+    return flat;
+  }, [displayRoutes]);
 
-  const handleSelect = useCallback((building) => {
-    setPopupBuilding(building);
-    onBuildingSelect?.(building);
-  }, [onBuildingSelect]);
+  const activeRoute = routes.find((r) => r.id === activeRouteId) ?? displayRoutes[0];
+  const currentStepLabel = guideSteps[guideStepIndex]?.label;
+  const selectedId = selectedBuilding?.id ?? null;
 
-  useEffect(() => {
-    if (selectedBuilding) setPopupBuilding(selectedBuilding);
-  }, [selectedBuilding]);
-
-  const pathColor = pathResult?.hasSaturated ? '#f59e0b' : '#22c55e';
-
-  const startEndMarkers = useMemo(() => {
-    if (!pathResult?.path?.length) return null;
-    const start = buildings.find((b) => b.id === pathResult.path[0]);
-    const end = buildings.find((b) => b.id === pathResult.path[pathResult.path.length - 1]);
-    return { start, end };
-  }, [pathResult, buildings]);
+  const primaryRoute = displayRoutes[displayRoutes.length - 1];
 
   return (
-    <div className="absolute inset-0" ref={mapRef}>
+    <div
+      className={`absolute inset-0 transition-all duration-500 ${navigationMode ? 'cf-map-nav-mode' : ''}`}
+      ref={mapRef}
+    >
       <MapContainer
         center={CENTER}
         zoom={ZOOM}
@@ -159,15 +186,12 @@ export default function CampusMap({
         zoomControl={false}
         style={{ width: '100%', height: '100%' }}
       >
-        <TileLayer
-          attribution='&copy; OpenStreetMap'
-          url={darkMode ? DARK : OSM}
-          maxZoom={19}
-        />
+        <TileLayer attribution='&copy; OpenStreetMap' url={darkMode ? DARK : OSM} maxZoom={19} />
         <MapResizer />
-        <CustomZoomControl />
-        <ScaleControl imperial={false} position="bottomleft" />
-        <MapController flyToBuilding={flyToBuilding} selectedBuilding={selectedBuilding} />
+        <CustomZoomControl hidden={navigationMode} />
+        {!navigationMode && <ScaleControl imperial={false} position="bottomleft" />}
+        <MapFlyController flyToBuilding={flyToBuilding} flyToCoords={flyToCoords} />
+        <FitPathBounds coords={fitCoords} active={!!fitCoords.length && displayRoutes.length > 0} />
 
         {filteredBuildings.map((b) => (
           <BuildingMarker
@@ -177,63 +201,99 @@ export default function CampusMap({
             onSelect={handleSelect}
             heatmapOnly={filters.heatmapOnly}
             visible
+            selected={selectedId === b.id}
+            onRoute={pathIds.has(b.id)}
+            dimmed={navigationMode && !pathIds.has(b.id)}
+            navigationMode={navigationMode}
           />
         ))}
 
-        {pathResult?.coords && (
-          <Polyline
-            positions={pathResult.coords}
-            pathOptions={{
-              color: pathColor,
-              weight: 5,
-              opacity: 0.85,
-              dashArray: '12 8',
-              className: 'path-animated',
-            }}
-          />
-        )}
+        {displayRoutes.map((route) => {
+          if (!route.result?.coords?.length) return null;
+          const color = route.color;
+          return (
+            <span key={route.id}>
+              <Polyline
+                positions={route.result.coords}
+                pathOptions={{
+                  color,
+                  weight: 14,
+                  opacity: 0.3,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                }}
+              />
+              <Polyline
+                positions={route.result.coords}
+                pathOptions={{
+                  color,
+                  weight: 8,
+                  opacity: 1,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  className: navigationMode ? 'path-nav-premium' : 'path-animated',
+                }}
+              />
+            </span>
+          );
+        })}
 
-        {startEndMarkers?.start && (
-          <Marker
-            position={[startEndMarkers.start.latitude, startEndMarkers.start.longitude]}
-            icon={L.divIcon({
-              className: '',
-              html: '<div style="font-size:24px">🟢</div>',
-              iconSize: [24, 24],
-              iconAnchor: [12, 12],
-            })}
-          />
-        )}
-        {startEndMarkers?.end && (
-          <Marker
-            position={[startEndMarkers.end.latitude, startEndMarkers.end.longitude]}
-            icon={L.divIcon({
-              className: '',
-              html: '<div style="font-size:24px">🔴</div>',
-              iconSize: [24, 24],
-              iconAnchor: [12, 12],
-            })}
-          />
-        )}
-
-        {popupBuilding && (
-          <PopupLayer
-            building={popupBuilding}
-            occupancy={occupancy}
-            currentHour={parseInt(formattedTime.split('h')[0], 10)}
-            onNavigate={onNavigate}
-            onHistory={onHistory}
-            onClose={() => setPopupBuilding(null)}
-          />
+        {primaryRoute?.result?.path?.length > 0 && (
+          <>
+            {(() => {
+              const start = buildings.find((b) => b.id === primaryRoute.result.path[0]);
+              const end = buildings.find(
+                (b) => b.id === primaryRoute.result.path[primaryRoute.result.path.length - 1],
+              );
+              return (
+                <>
+                  {start && (
+                    <Marker
+                      position={[start.latitude, start.longitude]}
+                      icon={startIcon}
+                      zIndexOffset={2000}
+                    />
+                  )}
+                  {end && (
+                    <Marker
+                      position={[end.latitude, end.longitude]}
+                      icon={endIcon}
+                      zIndexOffset={2000}
+                    />
+                  )}
+                </>
+              );
+            })()}
+          </>
         )}
       </MapContainer>
 
-      <MapLegend />
-      <CampusHUD
-        globalStats={globalStats}
-        formattedTime={formattedTime}
-        offline={offline}
+      {navigationMode && activeRoute?.result && (
+        <NavigationHUD
+          result={activeRoute.result}
+          currentStepLabel={currentStepLabel}
+          onExit={onExitNavigation}
+        />
+      )}
+
+      <RouteLegend
+        routes={routes}
+        activeRouteId={activeRouteId}
+        onSelectRoute={onSelectRoute}
+        onRemoveRoute={onRemoveRoute}
+        visible={routeMode === 'compare' && routes.length > 0 && !navigationMode}
       />
+
+      <MapLegend visible={!navigationMode && routeMode !== 'compare'} />
+      {!navigationMode && (
+        <CampusHUD
+          globalStats={globalStats}
+          formattedTime={formattedTime}
+          offline={offline}
+        />
+      )}
     </div>
   );
 }
+
+export default memo(CampusMap);

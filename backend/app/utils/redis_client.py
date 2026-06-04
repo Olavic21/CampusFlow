@@ -1,15 +1,16 @@
 """
-redis_client.py — Client Redis avec fallback gracieux.
+redis_client.py — Client Redis avec fallback gracieux et timeouts courts.
 
-Si Redis est indisponible (ex: env de dev sans Redis), toutes les opérations
-dégradent silencieusement en no-op plutôt que de crasher l'API.
+Évite de bloquer l'API si Redis est lent ou injoignable (cause fréquente de timeout global).
 """
 import redis
 from app.config import settings
 
+_REDIS_TIMEOUT_SEC = 2
+
 
 class _FallbackRedis:
-    """Stub Redis retournant None/[] sur toutes les opérations."""
+    """Stub Redis — toutes les opérations retournent immédiatement."""
 
     def get(self, key):
         return None
@@ -20,6 +21,9 @@ class _FallbackRedis:
     def keys(self, pattern="*"):
         return []
 
+    def scan_iter(self, match=None, count=None):
+        return iter([])
+
     def delete(self, *keys):
         return 0
 
@@ -29,11 +33,15 @@ class _FallbackRedis:
 
 def _make_client():
     try:
-        client = redis.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=2)
+        client = redis.from_url(
+            settings.REDIS_URL,
+            decode_responses=True,
+            socket_connect_timeout=_REDIS_TIMEOUT_SEC,
+            socket_timeout=_REDIS_TIMEOUT_SEC,
+        )
         client.ping()
         return client
     except Exception:
-        # Redis absent → fallback silencieux
         return _FallbackRedis()
 
 

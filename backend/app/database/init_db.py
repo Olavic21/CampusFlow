@@ -6,7 +6,7 @@ Ce fichier sert uniquement à bootstrapper rapidement un environnement de dev
 ou à faire tourner les tests avec SQLite.
 """
 from app.database.session import engine, Base
-import app.database.models  # noqa: F401 — importer pour enregistrer les modèles
+import app.database.models  # noqa: F401 — User, Location, etc.
 
 
 def init_db() -> None:

@@ -1,9 +1,83 @@
 from sqlalchemy import (
     Column, Integer, String, Float, Boolean, DateTime,
-    ForeignKey, Text, SmallInteger, Numeric
+    ForeignKey, Text, SmallInteger, Numeric, JSON, UniqueConstraint
 )
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database.session import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    username = Column(String(150), unique=True, nullable=False, index=True)
+    hashed_password = Column(String(255), nullable=False)
+    avatar = Column(String(500), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_login = Column(DateTime(timezone=True), nullable=True)
+
+    preferences = relationship("UserPreference", back_populates="user", uselist=False)
+    favorite_locations = relationship("FavoriteLocation", back_populates="user")
+    favorite_routes = relationship("FavoriteRoute", back_populates="user")
+    route_history = relationship("RouteHistory", back_populates="user")
+
+
+class UserPreference(Base):
+    __tablename__ = "user_preferences"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    theme = Column(String(20), default="system")
+    navigation_mode = Column(String(20), default="single")
+    extra = Column(JSON, nullable=True)
+
+    user = relationship("User", back_populates="preferences")
+
+
+class FavoriteLocation(Base):
+    __tablename__ = "favorite_locations"
+    __table_args__ = (UniqueConstraint("user_id", "location_id", name="uq_fav_loc"),)
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
+    label = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="favorite_locations")
+
+
+class FavoriteRoute(Base):
+    __tablename__ = "favorite_routes"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    start_location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
+    end_location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
+    label = Column(String(255), nullable=True)
+    distance_m = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="favorite_routes")
+
+
+class RouteHistory(Base):
+    __tablename__ = "route_history"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    start_location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
+    end_location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
+    distance_m = Column(Integer, nullable=False)
+    duration_min = Column(Integer, nullable=True)
+    path_json = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    user = relationship("User", back_populates="route_history")
 
 
 class Location(Base):

@@ -9,16 +9,9 @@ export function getMarkerRadius(capacite) {
   return 6 + Math.sqrt(capacite) * 0.8;
 }
 
-export function getBuildingIcon(building) {
-  const { type, nom } = building;
-  if (type === 'amphi') return '🎓';
-  if (type === 'labo') return '🔬';
-  if (type === 'admin') return '🏢';
-  if (nom.startsWith('L-') || nom.startsWith('L')) return '📋';
-  return '📚';
+/** @deprecated Utiliser getBuildingLucideIcon depuis buildingVisuals */
+export function getBuildingIcon() {
+  return '';
 }
 
-export function getTypeLabel(type) {
-  const map = { amphi: 'Amphithéâtre', labo: 'Laboratoire', salle: 'Salle', admin: 'Administration' };
-  return map[type] || type;
-}
+export { getTypeLabel } from './buildingVisuals';

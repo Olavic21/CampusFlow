@@ -7,7 +7,7 @@ load_dotenv()
 class Settings:
     SQLALCHEMY_DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://campusflow:securepass@localhost:5432/campusflow",
+        "sqlite:///./campusflow.db",  # dev local sans PostgreSQL
     )
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     # CORS_ORIGINS : liste séparée par virgules dans .env

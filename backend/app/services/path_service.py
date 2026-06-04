@@ -1,11 +1,14 @@
 """
 path_service.py — Calcul de chemin optimal entre deux salles (Dijkstra / Haversine).
+Graphe piéton : arêtes uniquement si distance < 120 m (aligné frontend SUP'PTIC).
 """
 import networkx as nx
 from sqlalchemy.orm import Session
 from math import radians, sin, cos, sqrt, atan2
 
 from app.database.models import Location
+
+MAX_EDGE_DIST = 120  # mètres — allées piétonnes campus SUP'PTIC
 
 
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -19,7 +22,7 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 
 def build_graph(db: Session) -> nx.Graph:
-    """Construit un graphe complet des salles actives avec distances en mètres."""
+    """Graphe piéton : nœuds = bâtiments, arêtes si distance Haversine < 120 m."""
     G = nx.Graph()
     locations = db.query(Location).all()
 
@@ -30,7 +33,8 @@ def build_graph(db: Session) -> nx.Graph:
     for i, (id1, d1) in enumerate(nodes):
         for id2, d2 in nodes[i + 1:]:
             dist = haversine(d1["lat"], d1["lon"], d2["lat"], d2["lon"])
-            G.add_edge(id1, id2, weight=dist)
+            if dist < MAX_EDGE_DIST:
+                G.add_edge(id1, id2, weight=dist)
 
     return G
 

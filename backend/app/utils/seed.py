@@ -1,83 +1,120 @@
 """
-seed.py — Données de test alignées sur le schéma SQL de data/db/schema.sql.
+seed.py — Données de dev alignées sur data/raw/campus.json (38 bâtiments SUP'PTIC).
 
-Utilisé uniquement en développement/test (SQLite ou PostgreSQL de dev).
+Usage (depuis backend/) :
+    python -m app.utils.seed
 """
-from sqlalchemy.orm import Session
-from app.database.models import Location, Flux, Feedback, Schedule
+import json
+from pathlib import Path
 from datetime import datetime, timedelta
-import random
+from sqlalchemy.orm import Session
+
+from app.database.session import SessionLocal, engine, Base
+from app.database.models import Location, Flux, Feedback
+import app.database.models  # noqa: F401
+
+DATA_DIR = Path(__file__).resolve().parents[3] / "data" / "raw"
+CAMPUS_JSON = DATA_DIR / "campus.json"
+CAPTEURS_JSON = DATA_DIR / "capteurs.json"
 
 
 def seed_database(db: Session) -> None:
-    # ── Nettoyage ─────────────────────────────────────────────────────────────
     db.query(Flux).delete()
     db.query(Feedback).delete()
-    db.query(Schedule).delete()
     db.query(Location).delete()
-
-    # ── Salles (campus SUP'PTIC approximatif) ─────────────────────────────────
-    buildings = [
-        ("Amphi A",       3.8620, 11.5220, 300, "amphi"),
-        ("Salle C17",     3.8615, 11.5218, 60,  "salle"),
-        ("Salle C16",     3.8613, 11.5216, 60,  "salle"),
-        ("Salle B04",     3.8610, 11.5210, 40,  "salle"),
-        ("Salle B12",     3.8612, 11.5214, 40,  "salle"),
-        ("Bibliothèque",  3.8605, 11.5205, 120, "bibliotheque"),
-        ("Administration",3.8600, 11.5200, 30,  "admin"),
-    ]
-    loc_objects = []
-    for nom, lat, lon, cap, typ in buildings:
-        loc = Location(nom=nom, latitude=lat, longitude=lon, capacite=cap, type=typ)
-        db.add(loc)
-        loc_objects.append(loc)
     db.commit()
-    db.refresh(loc_objects[0])  # s'assurer que les IDs sont disponibles
 
-    locations = db.query(Location).all()
-    now = datetime.utcnow()
+    if not CAMPUS_JSON.exists():
+        raise FileNotFoundError(f"campus.json introuvable : {CAMPUS_JSON}")
 
-    # ── Flux sur 7 jours ──────────────────────────────────────────────────────
-    for loc in locations:
-        for delta_h in range(-168, 0, 1):
-            ts = now + timedelta(hours=delta_h)
-            hour = ts.hour
-            jour = ts.weekday()   # 0=Lundi … 6=Dimanche (on ignore 6)
+    with CAMPUS_JSON.open(encoding="utf-8") as f:
+        buildings = json.load(f)
 
-            base = 50 if 8 <= hour <= 18 else 10
-            if loc.type == "amphi":
-                base = 150 if 9 <= hour <= 12 else 20
-
-            nombre = max(0, min(int(base + random.gauss(0, 15)), loc.capacite))
-            activite = 1 if (8 <= hour <= 17 and jour <= 5) else 0
-
-            # Niveau de congestion calculé
-            ratio = nombre / loc.capacite
-            if ratio < 0.3:
-                niveau = "faible"
-            elif ratio < 0.6:
-                niveau = "moyen"
-            else:
-                niveau = "eleve"
-
-            db.add(Flux(
-                location_id=loc.id,
-                timestamp=ts,
-                nombre_etudiants=nombre,
-                activite_prevue=activite,
-                heure_du_jour=hour,
-                jour_semaine=min(jour, 5),
-                niveau_congestion=niveau,
-            ))
-
-    # ── Feedbacks ─────────────────────────────────────────────────────────────
-    for i in range(60):
-        db.add(Feedback(
-            etudiant_id=random.randint(1000, 9999),
-            texte="Commentaire de test généré automatiquement.",
-            sentiment=random.choice(["positive", "negative", "neutral"]),
-            timestamp=now - timedelta(days=random.randint(0, 30)),
+    for b in buildings:
+        db.add(Location(
+            id=b["id"],
+            nom=b["nom"],
+            latitude=b["latitude"],
+            longitude=b["longitude"],
+            capacite=b["capacite"],
+            type=b["type"],
         ))
-
     db.commit()
-    print(f"Seed terminé : {len(locations)} salles, flux et feedbacks insérés.")
+
+    # Flux récents : capteurs.json remappés sur les 2 derniers jours (pour /flux/live)
+    now = datetime.utcnow()
+    if CAPTEURS_JSON.exists():
+        with CAPTEURS_JSON.open(encoding="utf-8") as f:
+            capteurs = json.load(f)
+        ref = datetime(2024, 10, 7)
+        count = 0
+        for snap in capteurs:
+            for day_offset in (0, 1):
+                ts = now.replace(
+                    hour=snap["heure"], minute=snap["minute"], second=0, microsecond=0
+                ) - timedelta(days=day_offset)
+                loc = next((b for b in buildings if b["id"] == snap["location_id"]), None)
+                if not loc:
+                    continue
+                n = snap["nombre_etudiants"]
+                ratio = n / loc["capacite"] if loc["capacite"] else 0
+                niveau = "faible" if ratio < 0.3 else ("moyen" if ratio <= 0.7 else "eleve")
+                db.add(Flux(
+                    location_id=snap["location_id"],
+                    timestamp=ts,
+                    nombre_etudiants=n,
+                    activite_prevue=1 if 8 <= snap["heure"] <= 18 else 0,
+                    heure_du_jour=snap["heure"],
+                    jour_semaine=min(ts.weekday(), 5),
+                    niveau_congestion=niveau,
+                ))
+                count += 1
+        db.commit()
+        print(f"  {count} enregistrements flux (capteurs remappés)")
+    else:
+        # Fallback : générer flux récents pour chaque bâtiment
+        now = datetime.utcnow()
+        for loc in db.query(Location).all():
+            for h in range(-48, 0):
+                ts = now + timedelta(hours=h)
+                n = max(0, min(loc.capacite, int(loc.capacite * 0.4)))
+                ratio = n / loc.capacite
+                niveau = "faible" if ratio < 0.3 else ("moyen" if ratio <= 0.7 else "eleve")
+                db.add(Flux(
+                    location_id=loc.id,
+                    timestamp=ts,
+                    nombre_etudiants=n,
+                    activite_prevue=1 if 8 <= ts.hour <= 17 else 0,
+                    heure_du_jour=ts.hour,
+                    jour_semaine=min(ts.weekday(), 5),
+                    niveau_congestion=niveau,
+                ))
+        db.commit()
+
+    # Feedbacks de démo
+    now = datetime.utcnow()
+    for i in range(30):
+        db.add(Feedback(
+            etudiant_id=1000 + i,
+            texte=f"Retour étudiant SUP'PTIC #{i + 1}",
+            sentiment=["positive", "negative", "neutral"][i % 3],
+            timestamp=now - timedelta(days=i % 14),
+        ))
+    db.commit()
+
+    n_loc = db.query(Location).count()
+    n_flux = db.query(Flux).count()
+    print(f"Seed terminé : {n_loc} bâtiments SUP'PTIC, {n_flux} flux, 30 feedbacks.")
+
+
+def main() -> None:
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        seed_database(db)
+    finally:
+        db.close()
+
+
+if __name__ == "__main__":
+    main()

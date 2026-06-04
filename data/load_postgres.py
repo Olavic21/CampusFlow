@@ -211,33 +211,38 @@ def load_flux(conn: _connection) -> None:
 
 
 def load_schedules(conn: _connection) -> None:
-    path = file_path("schedule.csv")
+    path = file_path("schedules.csv")
     schedules_df = read_csv_with_encodings(path)
     schedules_df["heure_debut"] = pd.to_datetime(schedules_df["heure_debut"])
     schedules_df["heure_fin"] = pd.to_datetime(schedules_df["heure_fin"])
 
     insert_query = """
-    INSERT INTO schedules (id, etudiant_id, salle_id, heure_debut, heure_fin)
-    VALUES (%s, %s, %s, %s, %s)
+    INSERT INTO schedules (id, groupe, type_activite, salle_id, heure_debut, heure_fin, jour_semaine)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
     ON CONFLICT (id) DO UPDATE SET
-        etudiant_id = EXCLUDED.etudiant_id,
+        groupe = EXCLUDED.groupe,
+        type_activite = EXCLUDED.type_activite,
         salle_id = EXCLUDED.salle_id,
         heure_debut = EXCLUDED.heure_debut,
-        heure_fin = EXCLUDED.heure_fin;
+        heure_fin = EXCLUDED.heure_fin,
+        jour_semaine = EXCLUDED.jour_semaine;
     """
 
     values = [
         (
             int(row.id),
-            int(row.etudiant_id),
+            str(row.groupe),
+            str(row.type_activite),
             int(row.salle_id),
             row.heure_debut.to_pydatetime(),
             row.heure_fin.to_pydatetime(),
+            int(row.jour_semaine),
         )
         for row in schedules_df.itertuples(index=False)
     ]
 
     with conn.cursor() as cursor:
+        cursor.execute("TRUNCATE TABLE schedules RESTART IDENTITY CASCADE")
         cursor.executemany(insert_query, values)
     conn.commit()
     print(f"{len(values)} enregistrements de schedules chargés.")

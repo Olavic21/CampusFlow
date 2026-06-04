@@ -10,12 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "framer-motion": "^12.40.0",
+    "html2canvas": "^1.4.1",
     "leaflet": "^1.9.4",
+    "leaflet-defaulticon-compatibility": "^0.1.2",
     "leaflet.offline": "^3.2.1",
     "localforage": "^1.10.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

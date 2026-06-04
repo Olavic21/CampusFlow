@@ -84,6 +84,9 @@ Thumbs.db
 # Local settings
 *.sqlite3
 
+# SQLite databases (générées localement)
+*.db
+
 # Backend app files
 backend/__pycache__/
 backend/*.pyc

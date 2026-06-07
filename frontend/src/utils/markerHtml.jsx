@@ -27,6 +27,9 @@ export function createPremiumMarkerHtml(building, { color, level, selected, dimm
   const selectedClass = selected ? 'marker-selected' : '';
   const dimmedClass = dimmed ? 'cf-marker-dimmed' : '';
 
+  const label = building?.code || building?.nom || '';
+  const shortLabel = label.length > 8 ? `${label.slice(0, 7)}…` : label;
+
   return `
     <div class="cf-marker ${pulse} ${selectedClass} ${dimmedClass}" style="--cf-color:${color};--cf-size:${size}px" role="img">
       <div class="cf-marker-glow"></div>
@@ -34,6 +37,7 @@ export function createPremiumMarkerHtml(building, { color, level, selected, dimm
         <div class="cf-marker-icon">${iconSvg}</div>
       </div>
       <div class="cf-marker-tail"></div>
+      ${shortLabel ? `<div class="cf-marker-label">${shortLabel}</div>` : ''}
     </div>
   `;
 }

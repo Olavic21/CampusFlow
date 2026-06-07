@@ -103,13 +103,13 @@ function SheetContent({
     );
   }
 
-  const occ = safeOccupancy(occupancy, building.id);
+  const occ = safeOccupancy(occupancy, building);
   const count = occ.count;
   const capacite = building.capacite ?? occ.capacite ?? 0;
   const taux = capacite > 0 ? count / capacite : occ.taux ?? 0;
   const { color, label } = getCongestionLevel(taux);
   const pct = Math.round(taux * 100);
-  const sparkline = getSparklineData(building.id, currentHour);
+  const sparkline = getSparklineData(building.geoId ?? building.id, currentHour);
   const Icon = getBuildingLucideIcon(building);
   const imageUrl = getBuildingImageUrl(building);
 
@@ -228,12 +228,46 @@ function SheetContent({
               <dd className="font-semibold text-slate-800 dark:text-slate-100">{capacite}</dd>
             </div>
             <div className="cf-stat-chip p-3">
-              <dt className="text-slate-500 text-xs">Type</dt>
+              <dt className="text-slate-500 text-xs">Catégorie</dt>
               <dd className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
-                {getTypeLabel(building.type, building)}
+                {building.categoryLabel || getTypeLabel(building.type, building)}
               </dd>
             </div>
           </dl>
+
+          {building.description && (
+            <section>
+              <p className="cf-menu-label mb-2">Description</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {building.description}
+              </p>
+            </section>
+          )}
+
+          {(building.services?.length > 0 || building.equipment?.length > 0) && (
+            <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {building.services?.length > 0 && (
+                <div className="cf-stat-chip p-3">
+                  <p className="cf-menu-label mb-1.5">Services</p>
+                  <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                    {building.services.map((s) => (
+                      <li key={s}>• {s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {building.equipment?.length > 0 && (
+                <div className="cf-stat-chip p-3">
+                  <p className="cf-menu-label mb-1.5">Équipements</p>
+                  <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                    {building.equipment.map((e) => (
+                      <li key={e}>• {e}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+          )}
 
           <section>
             <p className="cf-menu-label mb-2">Fréquentation (6 h)</p>

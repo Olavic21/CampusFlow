@@ -129,6 +129,39 @@ class Flux(Base):
     niveau_congestion    = Column(String(50), nullable=False)    # faible/moyen/élevé
 
 
+class Sensor(Base):
+    """Capteur IoT rattaché à une salle / bâtiment."""
+    __tablename__ = "sensors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False, unique=True, index=True)
+    location_id = Column(Integer, ForeignKey("locations.id"), nullable=False, index=True)
+    building = Column(String(255), nullable=False)
+    sensor_type = Column(String(50), nullable=False, default="counter")
+    status = Column(String(20), nullable=False, default="online")
+    source = Column(String(50), nullable=False, default="simulation")
+    last_seen = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    location = relationship("Location", backref="sensors")
+    readings = relationship("SensorReading", back_populates="sensor")
+
+
+class SensorReading(Base):
+    """Lecture temps réel d'un capteur."""
+    __tablename__ = "sensor_readings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sensor_id = Column(Integer, ForeignKey("sensors.id"), nullable=True, index=True)
+    location_id = Column(Integer, ForeignKey("locations.id"), nullable=False, index=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
+    occupancy = Column(Integer, nullable=False)
+    confidence_score = Column(Float, nullable=False, default=1.0)
+    source = Column(String(50), nullable=False, default="simulation")
+
+    sensor = relationship("Sensor", back_populates="readings")
+
+
 class Feedback(Base):
     """
     Miroir de data/db/schema.sql — table feedbacks.

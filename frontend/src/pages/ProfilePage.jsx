@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Star, History, User, Moon, Sun, Route } from 'lucide-react';
+import { Star, History, User, Moon, Sun, Route, Cpu, Settings, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { SkeletonList } from '../components/ui/Skeleton';
 import UserAvatar from '../components/profile/UserAvatar';
@@ -38,6 +38,7 @@ export default function ProfilePage({
   routeMode,
   onRouteModeChange,
   onToast,
+  onNavigate,
 }) {
   const { user, setUser } = useAuth();
   const [favLocations, setFavLocations] = useState([]);
@@ -274,6 +275,29 @@ export default function ProfilePage({
           </div>
         </section>
 
+        {onNavigate && (
+          <section className="cf-menu-card p-2 mb-6 divide-y divide-slate-100 dark:divide-slate-800">
+            <button
+              type="button"
+              onClick={() => onNavigate('iot')}
+              className="w-full flex items-center gap-3 px-3 py-3.5 text-sm font-medium text-slate-800 dark:text-white active:bg-slate-50 dark:active:bg-slate-800/50 rounded-xl"
+            >
+              <Cpu size={18} className="text-[#2563EB]" />
+              <span className="flex-1 text-left">Supervision IoT</span>
+              <ChevronRight size={16} className="text-slate-400" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('settings')}
+              className="w-full flex items-center gap-3 px-3 py-3.5 text-sm font-medium text-slate-800 dark:text-white active:bg-slate-50 dark:active:bg-slate-800/50 rounded-xl"
+            >
+              <Settings size={18} className="text-slate-500" />
+              <span className="flex-1 text-left">Paramètres</span>
+              <ChevronRight size={16} className="text-slate-400" />
+            </button>
+          </section>
+        )}
+
         <section className="cf-menu-card p-4 mb-6">
           <h3 className="cf-menu-label mb-3 flex items-center gap-2">
             <Star size={14} className="text-amber-500" />
@@ -285,7 +309,7 @@ export default function ProfilePage({
                 <span>⭐ {f.label || f.location_name}</span>
                 <button
                   type="button"
-                  className="text-xs text-red-500"
+                  className="cf-touch-target text-xs text-red-500 px-2"
                   onClick={async () => {
                     await removeFavoriteLocation(f.id);
                     load();
@@ -300,7 +324,7 @@ export default function ProfilePage({
                 <span>⭐ {f.label || `${f.start_name} → ${f.end_name}`}</span>
                 <button
                   type="button"
-                  className="text-xs text-red-500"
+                  className="cf-touch-target text-xs text-red-500 px-2"
                   onClick={async () => {
                     await removeFavoriteRoute(f.id);
                     load();

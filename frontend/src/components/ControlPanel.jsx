@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, SlidersHorizontal, Play, Pause } from 'lucide-react';
+import { Search, SlidersHorizontal, Play, Pause, Map, MapPin } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import CampusLayoutEngine from '../engine/CampusLayoutEngine';
 
 export default function ControlPanel({
   buildings,
+  occupancy = {},
   filters,
   setFilters,
   simulation,
@@ -14,15 +16,30 @@ export default function ControlPanel({
   setDarkMode,
   loading = false,
   compact = false,
+  mapViewMode = 'campus',
+  onMapViewModeChange,
 }) {
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
 
-  const suggestions = query.length >= 1
-    ? buildings.filter((b) => b.nom.toLowerCase().includes(query.toLowerCase())).slice(0, 6)
-    : [];
+  const suggestions = useMemo(() => {
+    if (query.length < 1) return [];
+    const twinHits = CampusLayoutEngine.search(query).map((t) =>
+      CampusLayoutEngine.enrichBuilding(t, occupancy, buildings),
+    );
+    const apiHits = buildings
+      .filter((b) => b.nom?.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 4);
+    const seen = new Set();
+    return [...twinHits, ...apiHits].filter((b) => {
+      const k = b.code || b.nom;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    }).slice(0, 8);
+  }, [query, buildings, occupancy]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -58,7 +75,7 @@ export default function ControlPanel({
             value={query}
             onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
             onFocus={() => setShowSuggestions(true)}
-            placeholder="Rechercher…"
+            placeholder="C1, L31, Restaurant…"
             disabled={loading}
             autoComplete="off"
             className="w-full text-sm cf-glass rounded-[20px] pl-9 pr-4 py-2.5 shadow-md border border-white/40 dark:border-slate-600/50 outline-none focus:ring-2 focus:ring-brand disabled:opacity-60 dark:text-white"
@@ -81,7 +98,10 @@ export default function ControlPanel({
                         setShowSuggestions(false);
                       }}
                     >
-                      {b.nom}
+                      <span className="font-semibold">{b.code || b.nom}</span>
+                      {b.code && b.nom !== b.code && (
+                        <span className="text-slate-400 ml-2 text-xs">{b.nom}</span>
+                      )}
                     </button>
                   </li>
                 ))}
@@ -89,6 +109,35 @@ export default function ControlPanel({
             )}
           </AnimatePresence>
         </div>
+
+        {onMapViewModeChange && (
+          <div className="flex cf-glass rounded-[20px] p-0.5 shadow-md border border-white/40 dark:border-slate-600/50">
+            <button
+              type="button"
+              onClick={() => onMapViewModeChange('campus')}
+              className={`flex items-center gap-1 px-3 py-2 rounded-[16px] text-xs font-semibold transition ${
+                mapViewMode === 'campus'
+                  ? 'bg-[#2563EB] text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              <Map size={14} />
+              {!compact && 'Vue Campus'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onMapViewModeChange('gps')}
+              className={`flex items-center gap-1 px-3 py-2 rounded-[16px] text-xs font-semibold transition ${
+                mapViewMode === 'gps'
+                  ? 'bg-[#2563EB] text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              <MapPin size={14} />
+              {!compact && 'Vue GPS'}
+            </button>
+          </div>
+        )}
 
         {/* Filters dropdown */}
         <div className="relative">
@@ -116,6 +165,9 @@ export default function ControlPanel({
                   { key: 'labo', label: 'Labo' },
                   { key: 'salle', label: 'Salle' },
                   { key: 'admin', label: 'Admin' },
+                  { key: 'dortoir', label: 'Dortoir' },
+                  { key: 'service', label: 'Services' },
+                  { key: 'sport', label: 'Sport' },
                 ].map(({ key, label }) => (
                   <label key={key} className="flex items-center gap-2 text-sm py-1 cursor-pointer">
                     <input
@@ -191,11 +243,13 @@ export default function ControlPanel({
 
 export function StatsModal({ globalStats, occupancy, onClose }) {
   const pct = Math.round(globalStats.occupancyRate * 100);
-  const maxPct = globalStats.maxBuilding
-    ? Math.round((occupancy[globalStats.maxBuilding.id]?.taux ?? 0) * 100)
+  const maxKey = globalStats.maxBuilding?.geoId ?? globalStats.maxBuilding?.id;
+  const minKey = globalStats.minBuilding?.geoId ?? globalStats.minBuilding?.id;
+  const maxPct = maxKey != null
+    ? Math.round((occupancy[maxKey]?.taux ?? globalStats.maxBuilding?.taux ?? 0) * 100)
     : 0;
-  const minPct = globalStats.minBuilding
-    ? Math.round((occupancy[globalStats.minBuilding.id]?.taux ?? 0) * 100)
+  const minPct = minKey != null
+    ? Math.round((occupancy[minKey]?.taux ?? globalStats.minBuilding?.taux ?? 0) * 100)
     : 0;
 
   return (

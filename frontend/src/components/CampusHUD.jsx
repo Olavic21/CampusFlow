@@ -14,7 +14,7 @@ function CampusHUD({ globalStats, formattedTime, offline }) {
 
   return (
     <aside
-      className="absolute bottom-3 right-3 z-[400] bg-white/90 backdrop-blur rounded-xl shadow-md px-4 py-3 text-xs space-y-1 max-w-[260px]"
+      className="absolute bottom-3 right-3 z-[400] hidden md:block bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-xl shadow-md px-4 py-3 text-xs space-y-1 max-w-[260px]"
       aria-label="Statistiques du campus"
     >
       {offline && (
@@ -22,7 +22,7 @@ function CampusHUD({ globalStats, formattedTime, offline }) {
           className="inline-block bg-amber-100 text-amber-900 text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1"
           role="status"
         >
-          Mode hors ligne
+          📡 Mode Hors Ligne
         </span>
       )}
       <p className="font-semibold text-slate-700 capitalize">

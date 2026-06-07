@@ -90,6 +90,11 @@ Thumbs.db
 
 # SQLite databases (générées localement)
 *.db
+*.db-shm
+*.db-wal
+
+# APK build local (copie racine)
+CampusFlow-lite-debug.apk
 
 # Backend app files
 backend/__pycache__/

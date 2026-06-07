@@ -12,7 +12,6 @@ import {
   removeFavoriteLocation,
   addFavoriteRoute,
 } from './services/authApi';
-import CampusMap from './components/CampusMap';
 import PathFinder from './components/PathFinder';
 import ControlPanel from './components/ControlPanel';
 import ToastStack from './components/ToastStack';
@@ -21,20 +20,26 @@ import SplashScreen from './components/SplashScreen';
 import AppNav from './components/AppNav';
 import BrandLogo from './components/brand/BrandLogo';
 import BuildingSheet from './components/BuildingSheet';
-import StatsDashboard from './components/StatsDashboard';
-import BuildingsList from './components/BuildingsList';
 import SettingsPanel from './components/SettingsPanel';
 import { useCongestion } from './hooks/useCongestion';
+import { SensorDataProvider } from './context/SensorDataContext';
+import SensorModeBadge from './components/iot/SensorModeBadge';
 import { usePathfinder } from './hooks/usePathfinder';
 import { useSimulation } from './hooks/useSimulation';
 import { useMediaQuery } from './hooks/useMediaQuery';
 import { useToast } from './hooks/useToast';
 import { useTheme } from './hooks/useTheme';
 import { buildNavigationSteps } from './utils/navigationSteps';
-import { resolveBuilding } from './utils/buildingSafety';
+import { resolveBuilding, safeOccupancy } from './utils/buildingSafety';
+import CampusLayoutEngine from './engine/CampusLayoutEngine';
 
+const CampusMap = lazy(() => import('./components/CampusMap'));
+const CampusPlanView = lazy(() => import('./components/plan/CampusPlanView'));
+const StatsDashboard = lazy(() => import('./components/StatsDashboard'));
+const BuildingsList = lazy(() => import('./components/BuildingsList'));
 const HistoryDrawer = lazy(() => import('./components/HistoryDrawer'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const IoTSupervisionPage = lazy(() => import('./pages/IoTSupervisionPage'));
 
 function parseSimulationHour(formattedTime) {
   const m = String(formattedTime || '').match(/(\d{1,2})/);
@@ -64,13 +69,19 @@ export default function App() {
 }
 
 function CampusFlowMain() {
+  const simulation = useSimulation();
+  return (
+    <SensorDataProvider simulatedTime={simulation.simulatedTime}>
+      <CampusFlowShell simulation={simulation} />
+    </SensorDataProvider>
+  );
+}
+
+function CampusFlowShell({ simulation }) {
   const { user, logout } = useAuth();
   const isMobile = !useMediaQuery('(min-width: 768px)');
   const { darkMode, setDarkMode, toggleDarkMode } = useTheme();
-  const simulation = useSimulation();
-  const { buildings, occupancy, offline, loading, globalStats } = useCongestion(
-    simulation.simulatedTime,
-  );
+  const { buildings, occupancy, offline, loading, globalStats } = useCongestion();
   const pathfinder = usePathfinder(buildings, occupancy);
   const { toasts, push, dismiss } = useToast();
 
@@ -78,9 +89,10 @@ function CampusFlowMain() {
   const [showSplash, setShowSplash] = useState(true);
   const [navigationMode, setNavigationMode] = useState(false);
   const [guideStepIndex, setGuideStepIndex] = useState(0);
+  const [stepFocusToken, setStepFocusToken] = useState(0);
   const [flyToCoords, setFlyToCoords] = useState(null);
   const [filters, setFilters] = useState({
-    types: ['amphi', 'labo', 'salle', 'admin'],
+    types: ['amphi', 'labo', 'salle', 'admin', 'dortoir', 'service', 'sport'],
     congestion: 'all',
     heatmapOnly: false,
   });
@@ -88,6 +100,7 @@ function CampusFlowMain() {
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [historyBuilding, setHistoryBuilding] = useState(null);
   const [pathfinderOpen, setPathfinderOpen] = useState(false);
+  const [mapViewMode, setMapViewMode] = useState('campus');
   const prevSatureRef = useRef({});
   const mapRef = useRef(null);
   const prevPathRef = useRef(null);
@@ -168,13 +181,15 @@ function CampusFlowMain() {
   }, [offline, push]);
 
   useEffect(() => {
-    for (const b of buildings) {
-      const taux = occupancy[b.id]?.taux ?? 0;
-      const wasSature = prevSatureRef.current[b.id];
+    const campusBuildings = CampusLayoutEngine.getGpsBuildings(occupancy, buildings);
+    for (const b of campusBuildings) {
+      const key = b.geoId ?? b.id;
+      const taux = safeOccupancy(occupancy, b).taux;
+      const wasSature = prevSatureRef.current[key];
       if (taux > 0.9 && !wasSature) {
-        push('saturation', `${b.nom} — ${Math.round(taux * 100)}% de capacité`);
+        push('saturation', `${b.code || b.nom} — ${Math.round(taux * 100)}% de capacité`);
       }
-      prevSatureRef.current[b.id] = taux > 0.9;
+      prevSatureRef.current[key] = taux > 0.9;
     }
   }, [occupancy, buildings, push]);
 
@@ -222,53 +237,100 @@ function CampusFlowMain() {
   );
 
   const focusBuilding = useCallback((building) => {
-    const b = resolveBuilding(building, buildings);
+    const b = resolveBuilding(building, buildings, occupancy);
     if (!b) return;
     setFlyToBuilding(b);
-    setFlyToCoords([b.latitude, b.longitude]);
+    if (b.latitude != null && b.longitude != null && mapViewMode === 'gps') {
+      setFlyToCoords([b.latitude, b.longitude]);
+    }
     setTimeout(() => {
       setFlyToBuilding(null);
       setFlyToCoords(null);
     }, 1200);
-  }, [buildings]);
+  }, [buildings, occupancy, mapViewMode]);
 
   const handleBuildingSelect = useCallback(
     (building) => {
       try {
-        const resolved = resolveBuilding(building, buildings);
+        const resolved = resolveBuilding(building, buildings, occupancy);
         if (!resolved) {
           push('warning', 'Impossible d\'afficher ce bâtiment');
           return;
         }
+        if (navigationMode) {
+          const stepIdx = guideSteps.findIndex(
+            (s) =>
+              s.building?.id === resolved.id ||
+              s.building?.geoId === resolved.geoId ||
+              s.buildingId === resolved.id ||
+              s.buildingId === resolved.geoId,
+          );
+          if (stepIdx >= 0) {
+            setGuideStepIndex(stepIdx);
+            setStepFocusToken((t) => t + 1);
+          }
+          focusBuilding(resolved);
+          return;
+        }
         setSelectedBuilding(resolved);
-        setActiveView('map');
+        if (activeView !== 'map' && activeView !== 'route') {
+          setActiveView('map');
+        }
         focusBuilding(resolved);
       } catch (e) {
         console.error('[CampusFlow] select building', e);
         push('error', 'Erreur lors de l\'ouverture de la fiche');
       }
     },
-    [buildings, focusBuilding, push],
+    [buildings, occupancy, focusBuilding, push, navigationMode, guideSteps, activeView],
   );
 
   const handleGuideStepSelect = useCallback(
     (index, building) => {
       setGuideStepIndex(index);
+      setStepFocusToken((t) => t + 1);
       if (building) focusBuilding(building);
     },
     [focusBuilding],
   );
 
+  const handleStepPrev = useCallback(() => {
+    setGuideStepIndex((i) => {
+      const next = Math.max(0, i - 1);
+      const b = guideSteps[next]?.building;
+      if (b) focusBuilding(b);
+      return next;
+    });
+    setStepFocusToken((t) => t + 1);
+  }, [guideSteps, focusBuilding]);
+
+  const handleStepNext = useCallback(() => {
+    setGuideStepIndex((i) => {
+      const next = Math.min(guideSteps.length - 1, i + 1);
+      const b = guideSteps[next]?.building;
+      if (b) focusBuilding(b);
+      return next;
+    });
+    setStepFocusToken((t) => t + 1);
+  }, [guideSteps, focusBuilding]);
+
+  const pathNodes = pathfinder.campusNetwork?.nodes ?? {};
+
   const handleNavigate = useCallback(
     (building) => {
       try {
-        const resolved = resolveBuilding(building, buildings);
+        const resolved = resolveBuilding(building, buildings, occupancy);
         if (!resolved) return;
-        pathfinder.setEndId(resolved.id);
+        const routeId = CampusLayoutEngine.resolveRouteId(resolved, buildings);
+        if (!routeId) {
+          push('error', 'Ce bâtiment n\'est pas accessible en itinéraire');
+          return;
+        }
+        pathfinder.setEndId(routeId);
         setActiveView('route');
         setPathfinderOpen(true);
         setSelectedBuilding(null);
-        push('info', `Destination : ${resolved.nom}`);
+        push('info', `Destination : ${resolved.code || resolved.nom}`);
       } catch (e) {
         console.error('[CampusFlow] navigate', e);
       }
@@ -280,6 +342,7 @@ function CampusFlowMain() {
     (res) => {
       setNavigationMode(true);
       setGuideStepIndex(0);
+      setStepFocusToken((t) => t + 1);
       setActiveView('map');
       if (isMobile) setPathfinderOpen(true);
       prevPathRef.current = res?.path ?? null;
@@ -296,7 +359,11 @@ function CampusFlowMain() {
       }
       startNavigation(res);
       push('success', `Navigation — ${res.totalDistance} m, ~${res.estimatedMinutes} min`);
-      if (user && pathfinder.startId && pathfinder.endId) {
+      if (
+        user &&
+        typeof pathfinder.startId === 'number' &&
+        typeof pathfinder.endId === 'number'
+      ) {
         saveRouteHistory({
           start_location_id: pathfinder.startId,
           end_location_id: pathfinder.endId,
@@ -313,17 +380,22 @@ function CampusFlowMain() {
   const handleQuickRoute = useCallback(
     async (building) => {
       try {
-        const resolved = resolveBuilding(building, buildings);
+        const resolved = resolveBuilding(building, buildings, occupancy);
         if (!resolved) return;
 
+        const routeId = CampusLayoutEngine.resolveRouteId(resolved, buildings);
+        if (!routeId) {
+          push('error', 'Ce bâtiment n\'est pas accessible en itinéraire');
+          return;
+        }
         if (!pathfinder.startId) {
-          pathfinder.setEndId(resolved.id);
+          pathfinder.setEndId(routeId);
           setActiveView('route');
           setPathfinderOpen(true);
           push('info', 'Choisissez un point de départ puis calculez le chemin');
           return;
         }
-        pathfinder.setEndId(resolved.id);
+        pathfinder.setEndId(routeId);
         const res = await pathfinder.computePath();
         if (!res?.path?.length) {
           push('error', 'Itinéraire impossible');
@@ -340,7 +412,14 @@ function CampusFlowMain() {
   );
 
   const handleSaveRouteFavorite = useCallback(async () => {
-    if (!user || !pathfinder.startId || !pathfinder.endId) return;
+    if (
+      !user ||
+      typeof pathfinder.startId !== 'number' ||
+      typeof pathfinder.endId !== 'number'
+    ) {
+      push('info', 'Favori disponible pour les bâtiments géolocalisés API');
+      return;
+    }
     try {
       await addFavoriteRoute({
         start_location_id: pathfinder.startId,
@@ -394,7 +473,7 @@ function CampusFlowMain() {
         />
       )}
 
-      <div className={`flex-1 flex flex-col min-w-0 min-h-0 ${isMobile ? 'pb-[72px]' : ''}`}>
+      <div className={`flex-1 flex flex-col min-w-0 min-h-0 ${isMobile ? 'pb-nav' : ''}`}>
         {isMobile && (activeView === 'map' || activeView === 'route') && (
           <div className="shrink-0 cf-glass border-b border-white/20 px-4 py-2.5 flex items-center justify-center z-[400]">
             <BrandLogo variant="mobile" />
@@ -402,16 +481,20 @@ function CampusFlowMain() {
         )}
 
         {activeView === 'stats' && (
-          <StatsDashboard globalStats={globalStats} occupancy={occupancy} buildings={buildings} />
+          <Suspense fallback={<div className="flex-1 p-4"><SkeletonList count={6} /></div>}>
+            <StatsDashboard globalStats={globalStats} occupancy={occupancy} buildings={buildings} />
+          </Suspense>
         )}
 
         {activeView === 'buildings' && (
-          <BuildingsList
-            buildings={buildings}
-            occupancy={occupancy}
-            onSelect={handleBuildingSelect}
-            onRouteFrom={handleQuickRoute}
-          />
+          <Suspense fallback={<div className="flex-1 p-4"><SkeletonList count={8} /></div>}>
+            <BuildingsList
+              buildings={buildings}
+              occupancy={occupancy}
+              onSelect={handleBuildingSelect}
+              onRouteFrom={handleQuickRoute}
+            />
+          </Suspense>
         )}
 
         {activeView === 'profile' && (
@@ -422,7 +505,14 @@ function CampusFlowMain() {
               routeMode={pathfinder.routeMode}
               onRouteModeChange={pathfinder.setRouteMode}
               onToast={push}
+              onNavigate={(view) => setActiveView(view)}
             />
+          </Suspense>
+        )}
+
+        {activeView === 'iot' && (
+          <Suspense fallback={<div className="flex-1 p-4"><SkeletonList count={4} /></div>}>
+            <IoTSupervisionPage onToast={push} />
           </Suspense>
         )}
 
@@ -442,6 +532,7 @@ function CampusFlowMain() {
             {showPathPanel && (
               <PathFinder
                 buildings={buildings}
+                occupancy={occupancy}
                 startId={pathfinder.startId}
                 endId={pathfinder.endId}
                 setStartId={pathfinder.setStartId}
@@ -470,6 +561,7 @@ function CampusFlowMain() {
               {showMapChrome && (
                 <ControlPanel
                   buildings={buildings}
+                  occupancy={occupancy}
                   filters={filters}
                   setFilters={setFilters}
                   simulation={simulation}
@@ -479,35 +571,73 @@ function CampusFlowMain() {
                   setDarkMode={setDarkMode}
                   loading={loading}
                   compact={isMobile}
+                  mapViewMode={mapViewMode}
+                  onMapViewModeChange={setMapViewMode}
                 />
               )}
 
-              <CampusMap
-                buildings={buildings}
-                occupancy={occupancy}
-                globalStats={globalStats}
-                offline={offline}
-                formattedTime={simulation.formattedTime}
-                filters={filters}
-                routes={pathfinder.routes}
-                activeRouteId={pathfinder.activeRouteId}
-                routeMode={pathfinder.routeMode}
-                darkMode={darkMode}
-                flyToBuilding={flyToBuilding}
-                flyToCoords={flyToCoords}
-                selectedBuilding={selectedBuilding}
-                onBuildingSelect={handleBuildingSelect}
-                mapRef={mapRef}
-                navigationMode={navigationMode}
-                onExitNavigation={exitNavigation}
-                guideStepIndex={guideStepIndex}
-                guideSteps={guideSteps}
-                pathIdsOnMap={pathfinder.pathIdsOnMap}
-                onSelectRoute={pathfinder.setActiveRouteId}
-                onRemoveRoute={pathfinder.removeRoute}
-              />
+              <Suspense fallback={<MapLoadingOverlay visible />}>
+                {mapViewMode === 'campus' ? (
+                  <CampusPlanView
+                    buildings={buildings}
+                    occupancy={occupancy}
+                    selectedBuilding={selectedBuilding}
+                    onBuildingSelect={handleBuildingSelect}
+                    routes={pathfinder.routes}
+                    activeRouteId={pathfinder.activeRouteId}
+                    routeMode={pathfinder.routeMode}
+                    navigationMode={navigationMode}
+                    pathIdsOnMap={pathfinder.pathIdsOnMap}
+                    darkMode={darkMode}
+                    flyToBuilding={flyToBuilding}
+                    guideSteps={guideSteps}
+                    guideStepIndex={guideStepIndex}
+                    pathNodes={pathNodes}
+                    onExitNavigation={exitNavigation}
+                    onSelectRoute={pathfinder.setActiveRouteId}
+                    onRemoveRoute={pathfinder.removeRoute}
+                    onStepPrev={handleStepPrev}
+                    onStepNext={handleStepNext}
+                  />
+                ) : (
+                  <CampusMap
+                    buildings={buildings}
+                    occupancy={occupancy}
+                    globalStats={globalStats}
+                    offline={offline}
+                    formattedTime={simulation.formattedTime}
+                    filters={filters}
+                    routes={pathfinder.routes}
+                    activeRouteId={pathfinder.activeRouteId}
+                    routeMode={pathfinder.routeMode}
+                    darkMode={darkMode}
+                    flyToBuilding={flyToBuilding}
+                    flyToCoords={flyToCoords}
+                    selectedBuilding={selectedBuilding}
+                    onBuildingSelect={handleBuildingSelect}
+                    mapRef={mapRef}
+                    navigationMode={navigationMode}
+                    onExitNavigation={exitNavigation}
+                    guideStepIndex={guideStepIndex}
+                    guideSteps={guideSteps}
+                    pathIdsOnMap={pathfinder.pathIdsOnMap}
+                    pathNodes={pathNodes}
+                    onSelectRoute={pathfinder.setActiveRouteId}
+                    onRemoveRoute={pathfinder.removeRoute}
+                    onStepPrev={handleStepPrev}
+                    onStepNext={handleStepNext}
+                    stepFocusToken={stepFocusToken}
+                  />
+                )}
+              </Suspense>
 
               <MapLoadingOverlay visible={loading} />
+
+              <div className="absolute top-3 right-3 z-[450] pointer-events-none">
+                <div className="pointer-events-auto">
+                  <SensorModeBadge compact={isMobile} />
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -516,7 +646,8 @@ function CampusFlowMain() {
           <button
             type="button"
             onClick={() => setPathfinderOpen(true)}
-            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[480] cf-menu-card px-5 py-2.5 text-sm font-semibold text-[#2563EB]"
+            className="fixed left-1/2 -translate-x-1/2 z-[480] cf-menu-card px-5 py-2.5 text-sm font-semibold text-[#2563EB]"
+            style={{ bottom: 'calc(var(--nav-h-safe) + 12px)' }}
           >
             Ouvrir l&apos;itinéraire
           </button>
@@ -547,7 +678,7 @@ function CampusFlowMain() {
         onToggleFavorite={user ? handleToggleFavorite : undefined}
         onHistory={(b) => {
           setSelectedBuilding(null);
-          setHistoryBuilding(resolveBuilding(b, buildings));
+          setHistoryBuilding(resolveBuilding(b, buildings, occupancy));
         }}
       />
 

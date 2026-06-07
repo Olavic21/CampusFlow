@@ -11,7 +11,8 @@
   --text: #0f172a;
   --text-muted: #64748b;
   --border: #e2e8f0;
-  --sidebar-w: 380px;
+  --nav-h: 64px;
+  --nav-h-safe: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -186,8 +187,26 @@ html.dark.auth-route .auth-shell {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
+.dark {
+  --surface: #0f172a;
+  --surface-2: #1e293b;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  color-scheme: dark;
+}
+
 .dark .cf-glass {
-  background: rgba(31, 41, 55, 0.88);
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.dark .cf-legend {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 .cf-stat-chip {
   background: rgba(255, 255, 255, 0.9);
@@ -195,11 +214,47 @@ html.dark.auth-route .auth-shell {
   border-radius: 16px;
 }
 .dark .cf-stat-chip {
-  background: rgba(30, 41, 59, 0.9);
+  background: rgba(30, 41, 59, 0.85);
   border-color: rgba(51, 65, 85, 0.6);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.cf-legend {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
 }
 .pb-safe {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+.pl-safe {
+  padding-left: max(0.5rem, env(safe-area-inset-left));
+}
+.pr-safe {
+  padding-right: max(0.5rem, env(safe-area-inset-right));
+}
+.pb-nav {
+  padding-bottom: var(--nav-h-safe);
+}
+
+/* Cible tactile minimale 44px (Material / iOS HIG) */
+.cf-touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .cf-marker:active { transform: scale(1.08); }
+  .cf-btn-primary:active,
+  .cf-btn-secondary:active { transform: scale(0.97); }
+  .leaflet-control-zoom a:active { background: var(--brand-light) !important; }
 }
 
 /* ── Premium map markers ── */
@@ -256,6 +311,28 @@ html.dark.auth-route .auth-shell {
   align-items: center;
   justify-content: center;
 }
+.cf-marker-label {
+  margin-top: 2px;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 2;
+}
+.dark .cf-marker-label,
+[data-theme='dark'] .cf-marker-label {
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.88);
+}
+
 .cf-marker-tail {
   width: 0;
   height: 0;
@@ -313,6 +390,17 @@ html.dark.auth-route .auth-shell {
 @keyframes pathNavFlow {
   to { stroke-dashoffset: -32; }
 }
+.cf-user-location { background: transparent !important; border: none !important; }
+.cf-user-location-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25);
+  animation: markerHalo 2s ease-in-out infinite;
+}
+
 .cf-marker-dimmed {
   opacity: 0.15 !important;
   transform: scale(0.85);

@@ -49,7 +49,7 @@ function ToastItem({ toast, onClose }) {
 function ToastStack({ toasts, onDismiss }) {
   return (
     <div
-      className="fixed top-4 right-4 z-[700] flex flex-col gap-2 pointer-events-none"
+      className="fixed top-4 right-4 z-[700] flex flex-col gap-2 pointer-events-none pt-safe pr-safe"
       aria-label="Notifications"
     >
       <AnimatePresence mode="popLayout">

@@ -23,7 +23,8 @@ export default function AvatarEditorModal({
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, cropX: 0, cropY: 0 });
-  const { openGallery, openCamera, inputProps, galleryRef, cameraRef } = useAvatarPicker();
+  const { openGallery, openGalleryNative, openCameraNative, inputProps, galleryRef, cameraRef } =
+    useAvatarPicker();
 
   const reset = useCallback(() => {
     setStep('menu');
@@ -159,11 +160,19 @@ export default function AvatarEditorModal({
                 <div className="w-full space-y-2">
                   {isMobile ? (
                     <>
-                      <button type="button" onClick={openCamera} className="cf-btn-primary w-full flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openCameraNative((file) => handleFile(file, 'camera'))}
+                        className="cf-btn-primary w-full flex items-center justify-center gap-2"
+                      >
                         <Camera size={18} />
                         Prendre une photo
                       </button>
-                      <button type="button" onClick={openGallery} className="cf-btn-secondary w-full flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openGalleryNative((file) => handleFile(file, 'gallery'))}
+                        className="cf-btn-secondary w-full flex items-center justify-center gap-2"
+                      >
                         <ImageIcon size={18} />
                         Choisir depuis la galerie
                       </button>

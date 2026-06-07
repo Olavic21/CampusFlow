@@ -14,9 +14,13 @@ class Settings:
         "sqlite:///./campusflow.db",
     )
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    _DEFAULT_CORS = (
+        "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,"
+        "https://localhost,capacitor://localhost,http://localhost"
+    )
     CORS_ORIGINS: list[str] = [
         o.strip()
-        for o in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+        for o in os.getenv("CORS_ORIGINS", _DEFAULT_CORS).split(",")
         if o.strip()
     ]
     ML_MODEL_PATH: str = os.getenv("ML_MODEL_PATH", "../ml/model.pkl")
@@ -36,6 +40,15 @@ class Settings:
     AVATAR_MAX_DIMENSION: int = 512
     AVATAR_TARGET_MAX_BYTES: int = 500 * 1024
     PUBLIC_API_BASE: str = os.getenv("PUBLIC_API_BASE", "http://127.0.0.1:8000")
+
+    # IoT / Capteurs — modes : simulation | api | mqtt | websocket
+    SENSOR_MODE: str = os.getenv("SENSOR_MODE", "simulation").strip().lower()
+    SENSOR_SIM_INTERVAL_SEC: int = int(os.getenv("SENSOR_SIM_INTERVAL_SEC", "10"))
+    CAPTEURS_JSON_PATH: Path = Path(
+        os.getenv("CAPTEURS_JSON_PATH", str(_PROJECT_ROOT / "data" / "raw" / "capteurs.json"))
+    ).resolve()
+    MQTT_BROKER_URL: str = os.getenv("MQTT_BROKER_URL", "")
+    MQTT_TOPIC: str = os.getenv("MQTT_TOPIC", "campusflow/occupancy/#")
 
 
 settings = Settings()

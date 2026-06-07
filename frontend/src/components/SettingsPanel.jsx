@@ -62,6 +62,9 @@ function SettingsPanel({
             { key: 'labo', label: 'Laboratoires' },
             { key: 'salle', label: 'Salles' },
             { key: 'admin', label: 'Administration' },
+            { key: 'dortoir', label: 'Dortoirs' },
+            { key: 'service', label: 'Services' },
+            { key: 'sport', label: 'Sport' },
           ].map(({ key, label }) => (
             <label
               key={key}

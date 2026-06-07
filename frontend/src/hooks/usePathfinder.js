@@ -1,7 +1,12 @@
 import { useState, useMemo, useCallback } from 'react';
-import { buildGraph, edgeWeight } from '../utils/buildGraph';
 import { dijkstra } from '../utils/dijkstra';
-import { fetchPath, isApiAvailable } from '../services/api';
+import {
+  buildCampusPedestrianGraph,
+  toGraphKey,
+  getCongestionKeyForNode,
+  simplifyNodePath,
+  pathDistance,
+} from '../utils/campusPedestrianGraph';
 import {
   buildResultFromPath,
   getRouteLabel,
@@ -10,16 +15,33 @@ import {
 
 const MAX_COMPARE_ROUTES = 3;
 
+function pedestrianEdgeWeight(from, to, edge, nodes, congestionMap) {
+  const key = getCongestionKeyForNode(to, nodes, congestionMap);
+  const taux = key != null ? congestionMap[key]?.taux ?? 0 : 0;
+  return edge.distance * (1 + taux * 0.5);
+}
+
 export function usePathfinder(buildings, occupancy) {
-  const graph = useMemo(() => buildGraph(buildings), [buildings]);
+  const campusNetwork = useMemo(
+    () => buildCampusPedestrianGraph(buildings),
+    [buildings],
+  );
+  const { graph, nodes } = campusNetwork;
 
   const congestionMap = useMemo(() => {
     const map = {};
     for (const [id, data] of Object.entries(occupancy)) {
       map[id] = { taux: data.taux };
     }
+    for (const n of Object.values(nodes)) {
+      if (n.type === 'building' && n.building && n.building.geoId == null) {
+        map[n.building.id] = {
+          taux: n.building.taux ?? 0,
+        };
+      }
+    }
     return map;
-  }, [occupancy]);
+  }, [occupancy, nodes]);
 
   const [startId, setStartId] = useState(null);
   const [endId, setEndId] = useState(null);
@@ -37,15 +59,20 @@ export function usePathfinder(buildings, occupancy) {
   const result = activeRoute?.result ?? null;
 
   const computePathLocal = useCallback(() => {
-    if (!startId || !endId || startId === endId) return null;
-    const getWeight = (from, to, edge) => edgeWeight(from, to, edge, congestionMap);
-    const { path, distance } = dijkstra(graph, startId, endId, getWeight);
-    if (!path.length) return null;
-    return buildResultFromPath(path, buildings, occupancy, distance);
-  }, [startId, endId, graph, buildings, congestionMap, occupancy]);
+    if (startId == null || endId == null || startId === endId) return null;
+    const startKey = toGraphKey(startId);
+    const endKey = toGraphKey(endId);
+    const getWeight = (from, to, edge) =>
+      pedestrianEdgeWeight(from, to, edge, nodes, congestionMap);
+    const { path: rawPath, distance } = dijkstra(graph, startKey, endKey, getWeight);
+    if (!rawPath.length) return null;
+    const nodePath = simplifyNodePath(rawPath, nodes);
+    const exactDist = pathDistance(nodePath, nodes) || distance;
+    return buildResultFromPath(nodePath, { nodes, geoBuildings: buildings, occupancy }, exactDist);
+  }, [startId, endId, graph, nodes, buildings, congestionMap, occupancy]);
 
   const registerRoute = useCallback(
-    (pathResult, apiUsed) => {
+    (pathResult) => {
       if (!pathResult?.path?.length) return null;
 
       const route = {
@@ -53,7 +80,7 @@ export function usePathfinder(buildings, occupancy) {
         result: pathResult,
         startId,
         endId,
-        label: getRouteLabel(startId, endId, buildings),
+        label: getRouteLabel(startId, endId, buildings, occupancy),
         color: ROUTE_COLORS[0],
       };
 
@@ -69,37 +96,21 @@ export function usePathfinder(buildings, occupancy) {
       });
 
       setActiveRouteId(route.id);
-      setUsingApi(apiUsed);
+      setUsingApi(false);
       return route;
     },
-    [startId, endId, buildings, routeMode],
+    [startId, endId, buildings, occupancy, routeMode],
   );
 
   const computePath = useCallback(async () => {
-    if (!startId || !endId || startId === endId) return null;
-
-    try {
-      const online = await isApiAvailable();
-      if (online) {
-        const data = await fetchPath(startId, endId, true);
-        const res = buildResultFromPath(data.path, buildings, occupancy, data.total_distance);
-        res.estimatedMinutes = Math.max(1, Math.round((data.estimated_time || 60) / 60));
-        if (res.path?.length) {
-          registerRoute(res, true);
-          return res;
-        }
-      }
-    } catch {
-      /* fallback local */
-    }
-
+    if (startId == null || endId == null || startId === endId) return null;
     const res = computePathLocal();
     if (res?.path?.length) {
-      registerRoute(res, false);
+      registerRoute(res);
       return res;
     }
     return null;
-  }, [startId, endId, buildings, occupancy, computePathLocal, registerRoute]);
+  }, [startId, endId, computePathLocal, registerRoute]);
 
   const computePathSafe = useCallback(async () => {
     setPathLoading(true);
@@ -110,37 +121,20 @@ export function usePathfinder(buildings, occupancy) {
     }
   }, [computePath]);
 
-  const updateActiveRouteResult = useCallback(
-    async () => {
-      if (!startId || !endId) return null;
-      const res = await (async () => {
-        try {
-          const online = await isApiAvailable();
-          if (online) {
-            const data = await fetchPath(startId, endId, true);
-            const built = buildResultFromPath(data.path, buildings, occupancy, data.total_distance);
-            built.estimatedMinutes = Math.max(1, Math.round((data.estimated_time || 60) / 60));
-            return built;
-          }
-        } catch {
-          /* local */
-        }
-        return computePathLocal();
-      })();
+  const updateActiveRouteResult = useCallback(async () => {
+    if (startId == null || endId == null) return null;
+    const res = computePathLocal();
+    if (!res || !activeRouteId) return null;
 
-      if (!res || !activeRouteId) return null;
-
-      setRoutes((prev) =>
-        prev.map((r) =>
-          r.id === activeRouteId
-            ? { ...r, result: res, label: getRouteLabel(r.startId, r.endId, buildings) }
-            : r,
-        ),
-      );
-      return res;
-    },
-    [startId, endId, buildings, occupancy, computePathLocal, activeRouteId],
-  );
+    setRoutes((prev) =>
+      prev.map((r) =>
+        r.id === activeRouteId
+          ? { ...r, result: res, label: getRouteLabel(r.startId, r.endId, buildings, occupancy) }
+          : r,
+      ),
+    );
+    return res;
+  }, [startId, endId, buildings, occupancy, computePathLocal, activeRouteId]);
 
   const removeRoute = useCallback((id) => {
     setRoutes((prev) => {
@@ -152,7 +146,6 @@ export function usePathfinder(buildings, occupancy) {
     });
   }, [activeRouteId]);
 
-  /** Réinitialisation complète — permet de recréer un itinéraire immédiatement */
   const clearPath = useCallback(() => {
     setRoutes([]);
     setActiveRouteId(null);
@@ -192,5 +185,6 @@ export function usePathfinder(buildings, occupancy) {
     pathLoading,
     pathIdsOnMap,
     graph,
+    campusNetwork,
   };
 }

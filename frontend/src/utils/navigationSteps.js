@@ -10,7 +10,7 @@ export function buildNavigationSteps(result) {
         id: `step-${i}-from`,
         buildingId: seg.from.id,
         building: seg.from,
-        label: seg.from.nom,
+        label: seg.from.code || seg.from.nom,
         distanceToNext: seg.distance,
         index: steps.length,
       });
@@ -19,7 +19,7 @@ export function buildNavigationSteps(result) {
       id: `step-${i}-to`,
       buildingId: seg.to.id,
       building: seg.to,
-      label: seg.to.nom,
+      label: seg.to.code || seg.to.nom,
       distanceToNext: i < result.segments.length - 1 ? result.segments[i + 1].distance : 0,
       index: steps.length,
     });

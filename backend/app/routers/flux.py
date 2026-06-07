@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from app.database.session import get_db
 from app.services.flux_service import get_live_flux, get_flux_history
 from app.schemas.flux import FluxLiveResponse, FluxHistoryResponse
+from app.utils.cache import cache_get, cache_set
 
 router = APIRouter(prefix="/flux", tags=["flux"])
 
@@ -14,7 +15,13 @@ def live_flux(
     db: Session = Depends(get_db),
 ):
     """Flux en temps réel pour toutes les salles sur la dernière fenêtre."""
-    return get_live_flux(db, window)
+    cache_key = f"flux:live:{window}"
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
+    result = get_live_flux(db, window)
+    cache_set(cache_key, result, ttl_seconds=15)
+    return result
 
 
 @router.get("/history/{location_id}", response_model=FluxHistoryResponse)

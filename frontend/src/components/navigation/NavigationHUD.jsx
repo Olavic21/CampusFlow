@@ -1,8 +1,16 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { X, Clock, Ruler, MapPin } from 'lucide-react';
+import { X, Clock, Ruler, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 
-function NavigationHUD({ result, currentStepLabel, onExit }) {
+function NavigationHUD({
+  result,
+  currentStepLabel,
+  stepIndex = 0,
+  stepCount = 0,
+  onExit,
+  onStepPrev,
+  onStepNext,
+}) {
   if (!result) return null;
 
   return (
@@ -57,10 +65,37 @@ function NavigationHUD({ result, currentStepLabel, onExit }) {
           </div>
         </div>
         {currentStepLabel && (
-          <p className="mt-3 text-xs text-slate-500 flex items-center gap-1.5">
-            <MapPin size={14} strokeWidth={2} />
-            Étape : <strong className="text-slate-700 dark:text-slate-200">{currentStepLabel}</strong>
-          </p>
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <p className="text-xs text-slate-500 flex items-center gap-1.5 min-w-0">
+              <MapPin size={14} strokeWidth={2} className="shrink-0" />
+              <span className="truncate">
+                Étape {stepCount > 0 ? `${stepIndex + 1}/${stepCount}` : ''} :{' '}
+                <strong className="text-slate-700 dark:text-slate-200">{currentStepLabel}</strong>
+              </span>
+            </p>
+            {stepCount > 1 && (
+              <div className="flex gap-1 shrink-0">
+                <button
+                  type="button"
+                  disabled={stepIndex <= 0}
+                  onClick={onStepPrev}
+                  className="cf-btn-ghost p-1.5 rounded-lg disabled:opacity-30"
+                  aria-label="Étape précédente"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  disabled={stepIndex >= stepCount - 1}
+                  onClick={onStepNext}
+                  className="cf-btn-ghost p-1.5 rounded-lg disabled:opacity-30"
+                  aria-label="Étape suivante"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </motion.div>

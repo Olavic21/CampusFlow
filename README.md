@@ -93,8 +93,58 @@ python scripts/verify_api.py
 | `POST /auth/refresh` | Renouveler les tokens |
 | `GET /users/favorites/locations` | Favoris bâtiments |
 | `GET /users/routes/history` | Historique itinéraires |
+| `GET /sensors/mode` | Mode capteurs (simulation / api / mqtt / websocket) |
+| `GET /sensors/status` | Dashboard IoT (capteurs actifs, lectures, sync) |
+| `GET /sensors` | Liste des capteurs enregistrés |
+| `POST /sensors/test-data` | Injecter une lecture test (ESP32, API) |
+| `WS /ws/live-occupancy/` | Flux temps réel d'occupation |
 
 > Pas de préfixe `/api` côté backend. Le frontend utilise `/api` via proxy Vite.
+
+### Architecture IoT (sensor-ready)
+
+CampusFlow Lite utilise une couche d'abstraction : l'application ne sait pas si les données viennent de `capteurs.json`, d'une API ou d'un capteur physique.
+
+```
+capteurs.json / ESP32 / MQTT
+        ↓
+SensorDataProvider (backend)
+        ↓
+/flux/live + /ws/live-occupancy/
+        ↓
+Frontend (aucune modification lors du passage aux capteurs réels)
+```
+
+**Mode par défaut** : `SENSOR_MODE=simulation` (backend `.env`)
+
+| Variable backend | Valeurs | Rôle |
+|------------------|---------|------|
+| `SENSOR_MODE` | `simulation`, `api`, `mqtt`, `websocket` | Source des données |
+| `SENSOR_SIM_INTERVAL_SEC` | ex. `10` | Intervalle du simulateur |
+| `CAPTEURS_JSON_PATH` | chemin vers `capteurs.json` | Baseline simulation |
+| `MQTT_BROKER_URL` | ex. `mqtt://localhost:1883` | Broker ESP32 |
+| `MQTT_TOPIC` | ex. `campusflow/occupancy/#` | Topic MQTT |
+
+**Frontend** : `VITE_SENSOR_MODE=api` (recommandé) — consomme `/flux/live` et WebSocket `/ws/live-occupancy/`.
+
+**Écrans IoT** :
+- Badge **Mode Simulation** / **Données Réelles** sur la carte
+- **Centre de supervision IoT** (menu IoT) — tableau des capteurs
+- **Dashboard** — métriques capteurs actifs, lectures, dernière sync
+
+**Test d'injection** (Swagger ou curl) :
+
+```bash
+curl -X POST http://127.0.0.1:8000/sensors/test-data \
+  -H "Content-Type: application/json" \
+  -d '{"building_id": 8, "occupancy": 17, "confidence_score": 0.95}'
+```
+
+**Payload MQTT** (futur ESP32) :
+
+```json
+{"building_id": 8, "occupancy": 17, "confidence_score": 0.95, "sensor_id": 1}
+```
 
 ### Authentification
 
@@ -138,6 +188,49 @@ Configurer `.env` avec `DATABASE_URL=postgresql://...`
 
 ---
 
+## Architecture IoT (Sensor Ready)
+
+CampusFlow est prêt pour de vrais capteurs (ESP32, MQTT, RFID, etc.) sans refonte du frontend.
+
+### Principe
+
+```
+capteurs.json / ESP32 / MQTT / API
+        ↓
+SensorDataProvider (backend + frontend)
+        ↓
+Carte & itinéraires (inchangés)
+```
+
+### Modes backend (`SENSOR_MODE`)
+
+| Mode | Description |
+|------|-------------|
+| `simulation` | **Défaut** — moteur temps réel basé sur `capteurs.json` |
+| `api` | Lectures injectées via HTTP |
+| `mqtt` | Broker MQTT (`MQTT_BROKER_URL`) |
+| `websocket` | Push via `/ws/live-occupancy/` |
+
+### Endpoints IoT
+
+| Route | Description |
+|-------|-------------|
+| `GET /sensors` | Liste des capteurs |
+| `GET /sensors/status` | Dashboard IoT (actifs, lectures, sync) |
+| `GET /sensors/mode` | Mode actuel (simulation / réel) |
+| `POST /sensors/test-data` | Injecter une lecture test |
+| `WS /ws/live-occupancy/` | Flux temps réel WebSocket |
+
+### Frontend
+
+- **Centre de supervision IoT** — menu navigation → IoT
+- Badge **🟡 Mode Simulation** / **🟢 Données Réelles** sur la carte
+- `VITE_SENSOR_MODE=api` (défaut) | `simulation` | `websocket`
+
+Le simulateur backend écrit dans `sensor_readings` + `flux` toutes les 10 s (configurable via `SENSOR_SIM_INTERVAL_SEC`).
+
+---
+
 ## Mode hors ligne
 
 Si le backend est indisponible, le frontend charge automatiquement :
@@ -146,6 +239,68 @@ Si le backend est indisponible, le frontend charge automatiquement :
 - `frontend/src/data/frequentation.csv`
 
 Un badge **« Mode hors ligne »** s'affiche.
+
+---
+
+## Application mobile Android (APK)
+
+CampusFlow Lite est **mobile-first** avec Capacitor 8. Le build APK **sans Android Studio** est supporté via des scripts PowerShell.
+
+**Navigation mobile** : Carte · Bâtiments · Itinéraires · Statistiques · Profil
+
+### Prérequis (une fois)
+
+- **JDK 17+** dans le `PATH` (`java -version`)
+- **Android SDK** (command line tools uniquement) — voir [`docs/mobile/INSTALLATION.md`](docs/mobile/INSTALLATION.md)
+- **Node.js** + `npm install` dans `frontend/`
+
+### Build APK sans Android Studio (Windows)
+
+```powershell
+# 1. Installer le SDK Android (si pas encore fait)
+.\scripts\install-android-sdk.ps1
+
+# 2. Backend accessible depuis le telephone (meme reseau Wi-Fi)
+.\scripts\restart-backend.ps1 -Lan
+# (depuis backend/ : .\scripts\restart-backend.ps1 -Lan — meme script via redirection)
+
+# 3. Build APK (detecte IP LAN + sync Capacitor + Gradle)
+.\scripts\build-apk-cli.ps1 -DetectIp
+```
+
+APK genere :
+
+- `frontend\android\app\build\outputs\apk\debug\app-debug.apk`
+- Copie : `CampusFlow-lite-debug.apk` (racine du projet)
+
+**Alternative** depuis `frontend/` : `npm run build:apk`
+
+### Configuration reseau APK
+
+L'APK ne peut pas appeler `127.0.0.1`. Le script `prepare-apk-env.ps1` copie `frontend/.env.apk` vers `frontend/.env` avec l'IP LAN du PC :
+
+```powershell
+.\scripts\prepare-apk-env.ps1 -DetectIp
+# ou manuellement : editer frontend/.env.apk puis copier vers .env
+```
+
+Backend : `CORS_ORIGINS` doit inclure `https://localhost` (deja dans `backend/.env.example`).
+
+### Avec Android Studio (optionnel)
+
+```bash
+cd frontend
+npm run cap:sync
+npm run cap:android
+```
+
+| Livrable | Commande |
+|----------|----------|
+| APK Debug | `.\scripts\build-apk-cli.ps1 -DetectIp` |
+| APK Release | `gradlew assembleRelease` (voir `docs/mobile/`) |
+| AAB Play Store | `gradlew bundleRelease` |
+
+Documentation complete : [`docs/mobile/INSTALLATION.md`](docs/mobile/INSTALLATION.md)
 
 ---
 

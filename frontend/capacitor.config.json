@@ -1,0 +1,24 @@
+{
+  "appId": "com.supptic.campusflow",
+  "appName": "CampusFlow Lite",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": false,
+      "backgroundColor": "#2563EB",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#2563EB"
+    }
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

@@ -1,7 +1,10 @@
 import { Fragment, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { X } from 'lucide-react';
 import frequentationRaw from '../data/frequentation.csv?raw';
+import BottomSheet from './ui/BottomSheet';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 function parseCSV(raw) {
   const lines = raw.trim().split('\n');
@@ -32,7 +35,7 @@ function buildWeeklyHeatmap(data) {
   }
 
   return grid.map((row, d) =>
-    row.map((sum, h) => (counts[d][h] ? sum / counts[d][h] : 0))
+    row.map((sum, h) => (counts[d][h] ? sum / counts[d][h] : 0)),
   );
 }
 
@@ -44,14 +47,7 @@ function heatColor(val, max) {
   return `rgb(${r},${g},${b})`;
 }
 
-export default function HistoryDrawer({ building, onClose }) {
-  const allData = useMemo(() => parseCSV(frequentationRaw), []);
-
-  const buildingData = useMemo(
-    () => (building ? allData.filter((r) => r.location_id === building.id) : []),
-    [allData, building]
-  );
-
+function HistoryContent({ buildingData, building }) {
   const chartData = useMemo(() => {
     const byDay = {};
     for (const row of buildingData) {
@@ -94,6 +90,93 @@ export default function HistoryDrawer({ building, onClose }) {
   const hours = Array.from({ length: 12 }, (_, i) => i + 7);
 
   return (
+    <div className="p-4 md:p-5 space-y-6 pb-safe">
+      <div>
+        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+          Historique 4 semaines — {building?.nom}
+        </p>
+        <div className="h-44">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Line type="monotone" dataKey="avg" stroke="#0088fe" strokeWidth={2} dot={false} isAnimationActive={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Heatmap hebdomadaire</p>
+        <div className="overflow-x-auto">
+          <div className="inline-grid gap-0.5" style={{ gridTemplateColumns: `40px repeat(${hours.length}, 1fr)` }}>
+            <div />
+            {hours.map((h) => (
+              <div key={h} className="text-[9px] text-center text-slate-400">{h}h</div>
+            ))}
+            {days.map((day, di) => (
+              <Fragment key={day}>
+                <div className="text-[10px] text-slate-500 flex items-center">{day}</div>
+                {hours.map((_, hi) => (
+                  <div
+                    key={`${di}-${hi}`}
+                    className="w-5 h-5 rounded-sm"
+                    style={{ backgroundColor: heatColor(heatmap[di][hi], maxHeat) }}
+                    title={`${Math.round(heatmap[di][hi])} étudiants`}
+                  />
+                ))}
+              </Fragment>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="cf-stat-chip p-3">
+          <p className="text-xs text-slate-500">Moyenne</p>
+          <p className="font-bold text-slate-800 dark:text-white">{stats.avg}</p>
+        </div>
+        <div className="cf-stat-chip p-3">
+          <p className="text-xs text-slate-500">Max</p>
+          <p className="font-bold text-slate-800 dark:text-white">{stats.max}</p>
+        </div>
+        <div className="cf-stat-chip p-3">
+          <p className="text-xs text-slate-500">Min</p>
+          <p className="font-bold text-slate-800 dark:text-white">{stats.min}</p>
+        </div>
+        <div className="cf-stat-chip p-3">
+          <p className="text-xs text-slate-500">Heure de pic</p>
+          <p className="font-bold text-slate-800 dark:text-white">{stats.peakHour}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function HistoryDrawer({ building, onClose }) {
+  const isMobile = !useMediaQuery('(min-width: 768px)');
+  const allData = useMemo(() => parseCSV(frequentationRaw), []);
+
+  const buildingData = useMemo(
+    () => (building ? allData.filter((r) => r.location_id === building.id) : []),
+    [allData, building],
+  );
+
+  if (isMobile) {
+    return (
+      <BottomSheet
+        open={!!building}
+        onClose={onClose}
+        title={building?.nom}
+        initialSnap={0.9}
+      >
+        {building && <HistoryContent buildingData={buildingData} building={building} />}
+      </BottomSheet>
+    );
+  }
+
+  return (
     <AnimatePresence>
       {building && (
         <>
@@ -109,71 +192,21 @@ export default function HistoryDrawer({ building, onClose }) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-[560] flex flex-col overflow-hidden"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-[560] flex flex-col overflow-hidden"
           >
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-              <h2 className="font-bold text-slate-800">{building.nom}</h2>
-              <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl">×</button>
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+              <h2 className="font-bold text-slate-800 dark:text-white">{building.nom}</h2>
+              <button
+                type="button"
+                onClick={onClose}
+                className="cf-touch-target p-2 text-slate-400 hover:text-slate-600"
+                aria-label="Fermer"
+              >
+                <X size={20} />
+              </button>
             </div>
-
-            <div className="flex-1 overflow-y-auto p-5 space-y-6">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 mb-2">Historique 4 semaines</p>
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="avg" stroke="#0088fe" strokeWidth={2} dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold text-slate-500 mb-2">Heatmap hebdomadaire</p>
-                <div className="overflow-x-auto">
-                  <div className="inline-grid gap-0.5" style={{ gridTemplateColumns: `40px repeat(${hours.length}, 1fr)` }}>
-                    <div />
-                    {hours.map((h) => (
-                      <div key={h} className="text-[9px] text-center text-slate-400">{h}h</div>
-                    ))}
-                    {days.map((day, di) => (
-                      <Fragment key={day}>
-                        <div className="text-[10px] text-slate-500 flex items-center">{day}</div>
-                        {hours.map((_, hi) => (
-                          <div
-                            key={`${di}-${hi}`}
-                            className="w-5 h-5 rounded-sm"
-                            style={{ backgroundColor: heatColor(heatmap[di][hi], maxHeat) }}
-                            title={`${Math.round(heatmap[di][hi])} étudiants`}
-                          />
-                        ))}
-                      </Fragment>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500">Moyenne</p>
-                  <p className="font-bold text-slate-800">{stats.avg}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500">Max</p>
-                  <p className="font-bold text-slate-800">{stats.max}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500">Min</p>
-                  <p className="font-bold text-slate-800">{stats.min}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500">Heure de pic</p>
-                  <p className="font-bold text-slate-800">{stats.peakHour}</p>
-                </div>
-              </div>
+            <div className="flex-1 overflow-y-auto sidebar-scroll">
+              <HistoryContent buildingData={buildingData} building={building} />
             </div>
           </motion.aside>
         </>

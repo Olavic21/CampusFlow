@@ -1,10 +1,12 @@
-import { memo } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Route, Navigation, AlertTriangle, GitCompare, Star } from 'lucide-react';
 import NavigationGuide from './navigation/NavigationGuide';
+import RouteBuildingPicker from './routes/RouteBuildingPicker';
 
 function PathFinder({
   buildings,
+  occupancy = {},
   startId,
   endId,
   setStartId,
@@ -27,12 +29,38 @@ function PathFinder({
   onStepSelect,
   onSaveRouteFavorite,
 }) {
+  const [startTwinId, setStartTwinId] = useState(null);
+  const [endTwinId, setEndTwinId] = useState(null);
+
+  const handleStartChange = useCallback(
+    (routeId, twinId) => {
+      setStartId(routeId);
+      setStartTwinId(twinId);
+    },
+    [setStartId],
+  );
+
+  const handleEndChange = useCallback(
+    (routeId, twinId) => {
+      setEndId(routeId);
+      setEndTwinId(twinId);
+    },
+    [setEndId],
+  );
+
+  const handleClearPath = useCallback(() => {
+    setStartTwinId(null);
+    setEndTwinId(null);
+    clearPath?.();
+  }, [clearPath]);
+
   if (collapsed) {
     return (
       <button
         type="button"
         onClick={onToggle}
-        className="fixed bottom-20 left-4 z-[500] md:hidden cf-menu-card px-4 py-3 text-sm font-semibold text-[#2563EB] flex items-center gap-2"
+        className="fixed left-4 z-[480] md:hidden cf-menu-card px-4 py-3 text-sm font-semibold text-[#2563EB] flex items-center gap-2"
+        style={{ bottom: 'calc(var(--nav-h-safe) + 12px)' }}
         aria-label="Ouvrir le panneau itinéraire"
       >
         <Route size={18} strokeWidth={2} />
@@ -45,9 +73,10 @@ function PathFinder({
     <motion.aside
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="w-full md:w-80 shrink-0 cf-glass border-r border-white/30 dark:border-slate-700/50 flex flex-col overflow-hidden z-[450]
-        fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto
+      className="w-full md:w-80 shrink-0 cf-glass border-r border-white/30 dark:border-slate-700/50 flex flex-col overflow-hidden z-[520]
+        fixed md:relative left-0 right-0 md:left-auto md:right-auto
         max-h-[50vh] md:max-h-none rounded-t-[24px] md:rounded-none shadow-2xl md:shadow-none"
+      style={{ bottom: 'var(--nav-h-safe)' }}
       aria-label="Calculateur d'itinéraire piéton"
     >
       <div className="md:hidden flex justify-center pt-3 pb-1">
@@ -70,43 +99,25 @@ function PathFinder({
       <div className="p-4 space-y-3 overflow-y-auto flex-1 sidebar-scroll">
         {!navigationMode && (
           <>
-            <div>
-              <label htmlFor="path-start" className="cf-menu-label">
-                Départ
-              </label>
-              <select
-                id="path-start"
-                value={startId ?? ''}
-                onChange={(e) => setStartId(Number(e.target.value) || null)}
-                className="cf-menu-input mt-1"
-              >
-                <option value="">— Choisir —</option>
-                {buildings.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.nom}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <RouteBuildingPicker
+              id="path-start"
+              label="Départ"
+              value={startId}
+              twinId={startTwinId}
+              geoBuildings={buildings}
+              occupancy={occupancy}
+              onChange={handleStartChange}
+            />
 
-            <div>
-              <label htmlFor="path-end" className="cf-menu-label">
-                Arrivée
-              </label>
-              <select
-                id="path-end"
-                value={endId ?? ''}
-                onChange={(e) => setEndId(Number(e.target.value) || null)}
-                className="cf-menu-input mt-1"
-              >
-                <option value="">— Choisir —</option>
-                {buildings.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.nom}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <RouteBuildingPicker
+              id="path-end"
+              label="Arrivée"
+              value={endId}
+              twinId={endTwinId}
+              geoBuildings={buildings}
+              occupancy={occupancy}
+              onChange={handleEndChange}
+            />
 
             <div className="cf-stat-chip p-3 space-y-2">
               <p className="cf-menu-label">Mode affichage</p>
@@ -208,7 +219,7 @@ function PathFinder({
               )}
               <button
                 type="button"
-                onClick={clearPath}
+                onClick={handleClearPath}
                 className="cf-btn-danger w-full mt-3"
               >
                 {navigationMode ? 'Quitter la navigation' : 'Effacer le chemin'}

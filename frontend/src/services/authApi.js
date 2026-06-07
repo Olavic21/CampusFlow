@@ -44,11 +44,12 @@ export function clearSession() {
   localStorage.removeItem(STORAGE_USER);
 }
 
-/** URLs à tester : proxy Vite puis backend direct (CORS activé) */
+/** URLs à tester : proxy Vite, backend direct, puis 127.0.0.1 en secours */
 function getApiBases() {
   const bases = [API_BASE];
-  if (!bases.includes(DIRECT_BACKEND)) {
-    bases.push(DIRECT_BACKEND);
+  const fallbacks = [DIRECT_BACKEND, 'http://127.0.0.1:8000'];
+  for (const fb of fallbacks) {
+    if (fb && !bases.includes(fb)) bases.push(fb);
   }
   return bases;
 }

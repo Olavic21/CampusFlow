@@ -75,3 +75,52 @@ CREATE TABLE IF NOT EXISTS feedbacks (
 -- Index sur etudiant_id et timestamp pour les analyses de feedbacks
 CREATE INDEX IF NOT EXISTS feedbacks_etudiant_id_idx ON feedbacks (etudiant_id);
 CREATE INDEX IF NOT EXISTS feedbacks_timestamp_idx ON feedbacks (timestamp);
+
+-- ── IoT / Capteurs (architecture sensor-ready) ──────────────────────────────
+
+CREATE TABLE IF NOT EXISTS sensors (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    location_id INTEGER NOT NULL,
+    building VARCHAR(255) NOT NULL,
+    sensor_type VARCHAR(50) NOT NULL DEFAULT 'counter',
+    status VARCHAR(20) NOT NULL DEFAULT 'online',
+    source VARCHAR(50) NOT NULL DEFAULT 'simulation',
+    last_seen TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_sensors_location
+        FOREIGN KEY (location_id)
+        REFERENCES locations (id),
+    CONSTRAINT chk_sensors_type
+        CHECK (sensor_type IN ('infrared', 'ultrasonic', 'camera', 'rfid', 'counter', 'other')),
+    CONSTRAINT chk_sensors_status
+        CHECK (status IN ('online', 'offline', 'error', 'maintenance'))
+);
+
+CREATE INDEX IF NOT EXISTS sensors_location_id_idx ON sensors (location_id);
+CREATE INDEX IF NOT EXISTS sensors_status_idx ON sensors (status);
+CREATE INDEX IF NOT EXISTS sensors_last_seen_idx ON sensors (last_seen);
+
+CREATE TABLE IF NOT EXISTS sensor_readings (
+    id SERIAL PRIMARY KEY,
+    sensor_id INTEGER,
+    location_id INTEGER NOT NULL,
+    timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    occupancy INTEGER NOT NULL,
+    confidence_score DOUBLE PRECISION NOT NULL DEFAULT 1.0,
+    source VARCHAR(50) NOT NULL DEFAULT 'simulation',
+    CONSTRAINT fk_sensor_readings_sensor
+        FOREIGN KEY (sensor_id)
+        REFERENCES sensors (id),
+    CONSTRAINT fk_sensor_readings_location
+        FOREIGN KEY (location_id)
+        REFERENCES locations (id),
+    CONSTRAINT chk_sensor_readings_occupancy
+        CHECK (occupancy >= 0),
+    CONSTRAINT chk_sensor_readings_confidence
+        CHECK (confidence_score >= 0.0 AND confidence_score <= 1.0)
+);
+
+CREATE INDEX IF NOT EXISTS sensor_readings_sensor_id_idx ON sensor_readings (sensor_id);
+CREATE INDEX IF NOT EXISTS sensor_readings_location_id_idx ON sensor_readings (location_id);
+CREATE INDEX IF NOT EXISTS sensor_readings_timestamp_idx ON sensor_readings (timestamp);

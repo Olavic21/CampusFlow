@@ -45,24 +45,25 @@ def get_congestion(db: Session, location_id: int = None) -> list[dict]:
     query = (
         db.query(
             Flux.location_id,
+            Location.capacite,
             func.avg(Flux.nombre_etudiants).label("avg_students"),
             func.max(Flux.timestamp).label("last_update"),
         )
+        .join(Location, Location.id == Flux.location_id)
         .filter(Flux.timestamp >= since)
     )
 
     if location_id:
         query = query.filter(Flux.location_id == location_id)
 
-    results = query.group_by(Flux.location_id).all()
+    results = query.group_by(Flux.location_id, Location.capacite).all()
 
     congestion_data = []
-    for loc_id, avg_students, last_update in results:
-        location = db.query(Location).filter(Location.id == loc_id).first()
-        if not location:
+    for loc_id, capacite, avg_students, last_update in results:
+        if not capacite:
             continue
 
-        occupancy_rate = min(float(avg_students) / float(location.capacite), 1.0)
+        occupancy_rate = min(float(avg_students) / float(capacite), 1.0)
 
         if occupancy_rate < 0.3:
             level = "low"

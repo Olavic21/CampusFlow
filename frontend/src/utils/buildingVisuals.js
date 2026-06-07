@@ -9,6 +9,7 @@ import {
   Dumbbell,
   Network,
   Monitor,
+  Home,
 } from 'lucide-react';
 
 /** Catégorie visuelle (icône + illustration) */
@@ -24,7 +25,10 @@ export function inferBuildingCategory(building) {
     if (n.includes('info')) return 'labo_it';
     return 'labo';
   }
-  if (building.type === 'admin') return 'admin';
+  if (building.type === 'admin' || building.category === 'administration') return 'admin';
+  if (building.type === 'dortoir' || building.category === 'dortoir') return 'dortoir';
+  if (building.type === 'service' || building.category === 'service') return 'restaurant';
+  if (building.type === 'sport' || building.category === 'sport') return 'sport';
   if (building.type === 'salle') return 'salle';
   return 'salle';
 }
@@ -40,6 +44,7 @@ const ICON_BY_CATEGORY = {
   health: HeartPulse,
   restaurant: UtensilsCrossed,
   sport: Dumbbell,
+  dortoir: Home,
 };
 
 export function getBuildingLucideIcon(building) {
@@ -60,6 +65,8 @@ export function getTypeLabel(type, building) {
     health: 'Infirmerie',
     restaurant: 'Restauration',
     sport: 'Terrain sportif',
+    dortoir: 'Dortoir',
+    service: 'Service',
   };
   return map[cat] || map[type] || type;
 }

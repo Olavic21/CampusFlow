@@ -3,6 +3,7 @@ import { CircleMarker, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import { getCongestionLevel, getMarkerRadius } from '../utils/congestionColor';
 import { createPremiumMarkerHtml } from '../utils/markerHtml.jsx';
+import { safeOccupancy } from '../utils/buildingSafety';
 
 function BuildingMarker({
   building,
@@ -17,7 +18,7 @@ function BuildingMarker({
 }) {
   if (!visible) return null;
 
-  const occ = occupancy[building.id] || {};
+  const occ = safeOccupancy(occupancy, building);
   const count = occ.count ?? 0;
   const taux = occ.taux ?? 0;
   const levelInfo = occ.color
@@ -28,7 +29,8 @@ function BuildingMarker({
   const size = onRoute || selected ? Math.max(48, radius * 3.5) : Math.max(40, radius * 3.2);
   const isDimmed = navigationMode && dimmed && !onRoute && !selected;
 
-  const ariaLabel = `${building.nom} — ${Math.round(taux * 100)}% occupé (${count}/${building.capacite}) — ${label}`;
+  const displayName = building.code || building.nom;
+  const ariaLabel = `${displayName} — ${Math.round(taux * 100)}% occupé (${count}/${building.capacite}) — ${label}`;
 
   const markerIcon = useMemo(
     () =>
@@ -41,7 +43,7 @@ function BuildingMarker({
           dimmed: isDimmed,
           size,
         }),
-        iconSize: [size, size + 8],
+        iconSize: [Math.max(size, 56), size + 22],
         iconAnchor: [size / 2, size + 6],
       }),
     [building, color, level, selected, onRoute, isDimmed, size],
@@ -93,8 +95,10 @@ function propsAreEqual(prev, next) {
   ) {
     return false;
   }
-  const p = prev.occupancy[prev.building.id];
-  const n = next.occupancy[next.building.id];
+  const pKey = prev.building.geoId ?? prev.building.id;
+  const nKey = next.building.geoId ?? next.building.id;
+  const p = prev.occupancy[pKey];
+  const n = next.occupancy[nKey];
   return (
     p?.count === n?.count &&
     p?.taux === n?.taux &&

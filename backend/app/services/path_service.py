@@ -1,42 +1,32 @@
 """
-path_service.py — Calcul de chemin optimal entre deux salles (Dijkstra / Haversine).
-Graphe piéton : arêtes uniquement si distance < 120 m (aligné frontend SUP'PTIC).
+path_service.py — Itinéraires piétons le long des allées campus (Dijkstra).
+Ne traverse pas les bâtiments : graphe = voies piétonnes + accès bâtiments.
 """
-import networkx as nx
+from __future__ import annotations
+
+import heapq
 from sqlalchemy.orm import Session
-from math import radians, sin, cos, sqrt, atan2
 
 from app.database.models import Location
+from app.services.campus_walkways import (
+    build_pedestrian_graph,
+    location_graph_key,
+)
 
-MAX_EDGE_DIST = 120  # mètres — allées piétonnes campus SUP'PTIC
-
-
-def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Distance en mètres entre deux points GPS (formule Haversine)."""
-    R = 6_371_000
-    phi1, phi2 = radians(lat1), radians(lat2)
-    dphi    = radians(lat2 - lat1)
-    dlambda = radians(lon2 - lon1)
-    a = sin(dphi / 2) ** 2 + cos(phi1) * cos(phi2) * sin(dlambda / 2) ** 2
-    return R * 2 * atan2(sqrt(a), sqrt(1 - a))
+_graph_cache: tuple[int, int, dict, dict] | None = None
 
 
-def build_graph(db: Session) -> nx.Graph:
-    """Graphe piéton : nœuds = bâtiments, arêtes si distance Haversine < 120 m."""
-    G = nx.Graph()
+def _get_pedestrian_graph(db: Session) -> tuple[dict, dict]:
+    """Cache le graphe piéton tant que le nombre / max id Location est stable."""
+    global _graph_cache
     locations = db.query(Location).all()
-
-    for loc in locations:
-        G.add_node(loc.id, lat=float(loc.latitude), lon=float(loc.longitude), name=loc.nom)
-
-    nodes = list(G.nodes(data=True))
-    for i, (id1, d1) in enumerate(nodes):
-        for id2, d2 in nodes[i + 1:]:
-            dist = haversine(d1["lat"], d1["lon"], d2["lat"], d2["lon"])
-            if dist < MAX_EDGE_DIST:
-                G.add_edge(id1, id2, weight=dist)
-
-    return G
+    count = len(locations)
+    max_id = max((loc.id for loc in locations), default=0)
+    if _graph_cache and _graph_cache[0] == count and _graph_cache[1] == max_id:
+        return _graph_cache[2], _graph_cache[3]
+    graph, nodes = build_pedestrian_graph(locations)
+    _graph_cache = (count, max_id, graph, nodes)
+    return graph, nodes
 
 
 def find_path(
@@ -44,45 +34,83 @@ def find_path(
     from_id: int,
     to_id: int,
     avoid_congestion: bool,
-    get_congestion,          # callable : get_congestion(db) → list[dict]
+    get_congestion,
 ) -> dict | None:
-    """
-    Trouve le chemin le plus court (Dijkstra) entre deux salles.
+    graph, nodes = _get_pedestrian_graph(db)
 
-    Si avoid_congestion=True, les arêtes passant par des salles
-    à congestion high/critical reçoivent une pénalité ×1.5.
-    """
-    G = build_graph(db)
-
-    if from_id not in G or to_id not in G:
+    start_key = location_graph_key(from_id)
+    end_key = location_graph_key(to_id)
+    if start_key not in graph or end_key not in graph:
         return None
 
+    cong_map: dict[int, str] = {}
     if avoid_congestion:
-        congestion_data = get_congestion(db)          # ← appel correct (fonction, pas module)
+        congestion_data = get_congestion(db)
         cong_map = {c["location_id"]: c["level"] for c in congestion_data}
-        for u, v, data in G.edges(data=True):
-            penalty = 1.0
-            if cong_map.get(u) in ("high", "critical"):
-                penalty *= 1.5
-            if cong_map.get(v) in ("high", "critical"):
-                penalty *= 1.5
-            data["weight"] = data["weight"] * penalty
 
-    try:
-        path_nodes = nx.shortest_path(G, source=from_id, target=to_id, weight="weight")
-    except nx.NetworkXNoPath:
+    def edge_weight(u: str, v: str, base_dist: float) -> float:
+        weight = base_dist
+        node_v = nodes.get(v, {})
+        loc_id = node_v.get("location_id")
+        if loc_id and cong_map.get(loc_id) in ("high", "critical"):
+            weight *= 1.5
+        return weight
+
+    dist: dict[str, float] = {k: float("inf") for k in graph}
+    prev: dict[str, str | None] = {k: None for k in graph}
+    dist[start_key] = 0.0
+    heap: list[tuple[float, str]] = [(0.0, start_key)]
+    visited: set[str] = set()
+
+    while heap:
+        d_u, u = heapq.heappop(heap)
+        if u in visited:
+            continue
+        if u == end_key:
+            break
+        visited.add(u)
+        for edge in graph.get(u, []):
+            v = edge["to"]
+            if v in visited:
+                continue
+            w = edge_weight(u, v, edge["distance"])
+            alt = d_u + w
+            if alt < dist[v]:
+                dist[v] = alt
+                prev[v] = u
+                heapq.heappush(heap, (alt, v))
+
+    if prev[end_key] is None and end_key != start_key:
         return None
 
-    total_dist = sum(G[u][v]["weight"] for u, v in zip(path_nodes, path_nodes[1:]))
-    estimated_time = int(total_dist / 1.33)           # 1.33 m/s ≈ 4.8 km/h
-    waypoints = [
-        {"lat": G.nodes[n]["lat"], "lng": G.nodes[n]["lon"]}
-        for n in path_nodes
+    node_path: list[str] = []
+    cur: str | None = end_key
+    while cur:
+        node_path.insert(0, cur)
+        cur = prev[cur]
+
+    building_path = [
+        nodes[n]["location_id"]
+        for n in node_path
+        if nodes.get(n, {}).get("type") == "building"
+    ]
+    if not building_path:
+        building_path = [from_id, to_id]
+
+    coords = [
+        [nodes[n]["lat"], nodes[n]["lon"]]
+        for n in node_path
+        if n in nodes
     ]
 
+    total_dist = dist[end_key]
+    estimated_time = int(total_dist / 1.33)
+
     return {
-        "path":            path_nodes,
-        "total_distance":  round(total_dist, 1),
-        "estimated_time":  estimated_time,
-        "waypoints":       waypoints,
+        "path": building_path,
+        "node_path": node_path,
+        "total_distance": round(total_dist, 1),
+        "estimated_time": estimated_time,
+        "waypoints": [{"lat": c[0], "lng": c[1]} for c in coords],
+        "coords": coords,
     }

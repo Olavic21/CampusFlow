@@ -45,22 +45,24 @@ class MinHeap {
 }
 
 /**
- * Dijkstra avec file de priorité (tas) — adapté au graphe campus (~40 nœuds).
+ * Dijkstra — clés de nœuds string ou number (graphe piéton campus).
  */
 export function dijkstra(graph, startId, endId, getWeight) {
   const dist = {};
   const prev = {};
   const visited = new Set();
-  const nodes = Object.keys(graph);
-  const endKey = String(endId);
   const startKey = String(startId);
+  const endKey = String(endId);
 
-  for (const id of nodes) {
+  for (const id of Object.keys(graph)) {
     dist[id] = Infinity;
     prev[id] = null;
   }
-  dist[startKey] = 0;
+  if (!(startKey in dist) || !(endKey in dist)) {
+    return { path: [], distance: Infinity };
+  }
 
+  dist[startKey] = 0;
   const heap = new MinHeap();
   heap.push(startKey, 0);
 
@@ -73,7 +75,7 @@ export function dijkstra(graph, startId, endId, getWeight) {
     for (const edge of graph[u] || []) {
       const v = String(edge.to);
       if (visited.has(v)) continue;
-      const w = getWeight ? getWeight(u, v, edge) : edge.weight;
+      const w = getWeight ? getWeight(u, v, edge) : (edge.distance ?? edge.weight ?? 1);
       const alt = dist[u] + w;
       if (alt < dist[v]) {
         dist[v] = alt;
@@ -88,7 +90,8 @@ export function dijkstra(graph, startId, endId, getWeight) {
   if (prev[cur] === null && cur !== startKey) return { path: [], distance: Infinity };
 
   while (cur) {
-    path.unshift(Number(cur));
+    const numeric = Number(cur);
+    path.unshift(Number.isFinite(numeric) && String(numeric) === cur ? numeric : cur);
     cur = prev[cur];
   }
 

@@ -92,6 +92,25 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
+*.db-journal
+
+# ── Secrets / environnement ─────────────────────────────────────────
+# Tout .env est ignoré SAUF les gabarits .env.example (committés, gérés).
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# ── APK / Capacitor ────────────────────────────────────────────────
+*.apk
+frontend/.env.apk
+capacitor.config.*.json
+CampusFlow-lite-debug.apk
+
+# ── Artefact ML binaire (5,3 Mo) — régénéré via ml/train_*.py ou LFS ─
+ml/model.pkl
+model.pkl
+*.pkl
 
 # APK build local (copie racine)
 CampusFlow-lite-debug.apk

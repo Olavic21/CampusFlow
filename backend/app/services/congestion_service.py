@@ -9,6 +9,7 @@ from sqlalchemy import func
 from datetime import datetime, timedelta
 from app.utils.redis_client import redis_client
 from app.database.models import Flux, Location
+from app.services.congestion_levels import congestion_level_from_taux
 import json
 
 
@@ -65,14 +66,7 @@ def get_congestion(db: Session, location_id: int = None) -> list[dict]:
 
         occupancy_rate = min(float(avg_students) / float(capacite), 1.0)
 
-        if occupancy_rate < 0.3:
-            level = "low"
-        elif occupancy_rate < 0.6:
-            level = "medium"
-        elif occupancy_rate < 0.85:
-            level = "high"
-        else:
-            level = "critical"
+        level = congestion_level_from_taux(occupancy_rate)
 
         data = {
             "location_id":    loc_id,

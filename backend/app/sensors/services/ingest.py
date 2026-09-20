@@ -6,6 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database.models import Flux, Location, Sensor, SensorReading
+from app.services.congestion_levels import congestion_level_from_taux, db_value_for_level
 
 # Compteur global (dashboard IoT)
 _readings_count = 0
@@ -21,11 +22,8 @@ def get_last_sync() -> datetime | None:
 
 
 def _niveau_congestion(ratio: float) -> str:
-    if ratio < 0.3:
-        return "faible"
-    if ratio <= 0.7:
-        return "moyen"
-    return "eleve"
+    # Source canonique unique — voir app/services/congestion_levels.py
+    return db_value_for_level(congestion_level_from_taux(ratio))
 
 
 def _resolve_sensor(db: Session, location_id: int, sensor_id: int | None) -> Sensor | None:

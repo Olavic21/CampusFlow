@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.database.session import SessionLocal, engine, Base
 from app.database.models import Location, Flux, Feedback
+from app.services.congestion_levels import db_value_for_level, congestion_level_from_taux
 import app.database.models  # noqa: F401
 
 DATA_DIR = Path(__file__).resolve().parents[3] / "data" / "raw"
@@ -58,7 +59,7 @@ def seed_database(db: Session) -> None:
                     continue
                 n = snap["nombre_etudiants"]
                 ratio = n / loc["capacite"] if loc["capacite"] else 0
-                niveau = "faible" if ratio < 0.3 else ("moyen" if ratio <= 0.7 else "eleve")
+                niveau = db_value_for_level(congestion_level_from_taux(ratio))
                 db.add(Flux(
                     location_id=snap["location_id"],
                     timestamp=ts,
@@ -79,7 +80,7 @@ def seed_database(db: Session) -> None:
                 ts = now + timedelta(hours=h)
                 n = max(0, min(loc.capacite, int(loc.capacite * 0.4)))
                 ratio = n / loc.capacite
-                niveau = "faible" if ratio < 0.3 else ("moyen" if ratio <= 0.7 else "eleve")
+                niveau = db_value_for_level(congestion_level_from_taux(ratio))
                 db.add(Flux(
                     location_id=loc.id,
                     timestamp=ts,

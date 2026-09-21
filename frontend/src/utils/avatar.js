@@ -8,10 +8,20 @@ export function getInitials(name, username) {
   return source.slice(0, 2).toUpperCase();
 }
 
-const BACKEND_DIRECT = (import.meta.env.VITE_BACKEND_DIRECT || 'http://127.0.0.1:8000').replace(
-  /\/$/,
-  '',
-);
+const API_URL = import.meta.env.VITE_API_URL || '';
+// En production, VITE_API_URL est absolue (backend Oracle Cloud) → les médias
+// doivent être chargés depuis ce backend, jamais depuis 127.0.0.1.
+const IS_ABSOLUTE_API = /^https?:\/\//i.test(API_URL);
+
+/** Origine du backend (sans suffixe /api) ou '' si le proxy local est utilisé. */
+function resolveBackendDirect() {
+  const explicit = import.meta.env.VITE_BACKEND_DIRECT;
+  if (explicit) return String(explicit).replace(/\/$/, '');
+  if (IS_ABSOLUTE_API) return API_URL.replace(/\/api$/, '').replace(/\/$/, '');
+  return import.meta.env.DEV ? 'http://127.0.0.1:8000' : '';
+}
+
+const BACKEND_DIRECT = resolveBackendDirect();
 
 function appendCacheBust(url, key) {
   const sep = url.includes('?') ? '&' : '?';
@@ -40,7 +50,8 @@ export function getAvatarUrl(avatar, opts = {}) {
     path = `/media${path}`;
   }
 
-  const base = preferDirect ? BACKEND_DIRECT : '';
+  // En production (API absolue), les médias viennent du backend — jamais du domaine Vercel.
+  const base = preferDirect || IS_ABSOLUTE_API ? BACKEND_DIRECT : '';
   const url = `${base}${path}`;
   return bustCache ? appendCacheBust(url, path) : url;
 }

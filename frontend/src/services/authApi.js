@@ -1,10 +1,10 @@
 import { parseApiError } from '../utils/parseApiError';
 
 const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
-const DIRECT_BACKEND = (import.meta.env.VITE_BACKEND_DIRECT || 'http://127.0.0.1:8000').replace(
-  /\/$/,
-  '',
-);
+// Repli localhost : uniquement en développement (jamais dans un build de production).
+const DIRECT_BACKEND = (
+  import.meta.env.VITE_BACKEND_DIRECT || (import.meta.env.DEV ? 'http://127.0.0.1:8000' : '')
+).replace(/\/$/, '');
 const AUTH_TIMEOUT_MS = 15000;
 const REGISTER_TIMEOUT_MS = 20000;
 const HEALTH_TIMEOUT_MS = 3000;
@@ -44,9 +44,14 @@ export function clearSession() {
   localStorage.removeItem(STORAGE_USER);
 }
 
-/** URLs à tester : proxy Vite, backend direct, puis 127.0.0.1 en secours */
+/** URLs à tester : proxy Vite, backend direct, puis 127.0.0.1 en secours (dev uniquement) */
 function getApiBases() {
   const bases = [API_BASE];
+  if (!import.meta.env.DEV) {
+    // Production : une seule origine (VITE_API_URL absolue) — aucun repli localhost.
+    if (DIRECT_BACKEND && !bases.includes(DIRECT_BACKEND)) bases.push(DIRECT_BACKEND);
+    return bases;
+  }
   const fallbacks = [DIRECT_BACKEND, 'http://127.0.0.1:8000'];
   for (const fb of fallbacks) {
     if (fb && !bases.includes(fb)) bases.push(fb);
@@ -81,10 +86,13 @@ export async function checkAuthBackend() {
       errors.push(`${url} → ${e?.name === 'AbortError' ? 'timeout' : e.message}`);
     }
   }
+  const devHint =
+    "Ouvrez un terminal, exécutez : .\\scripts\\restart-backend.ps1 (ou : cd backend ; uvicorn app.main:app --reload --port 8000)";
   return {
     ok: false,
-    message:
-      "L'API CampusFlow ne répond pas. Ouvrez un terminal, exécutez : .\\scripts\\restart-backend.ps1 (ou : cd backend ; uvicorn app.main:app --reload --port 8000)",
+    message: import.meta.env.DEV
+      ? `L'API CampusFlow ne répond pas. ${devHint}`
+      : "L'API CampusFlow est injoignable. Vérifiez VITE_API_URL (backend Oracle Cloud) et l'état du service campusflow-api côté serveur.",
     details: errors,
   };
 }
@@ -255,7 +263,6 @@ export async function restoreSession() {
     return { user: null };
   }
 
-  const cached = getStoredUser();
   const opts = { timeoutMs: SESSION_RESTORE_TIMEOUT_MS, bases: [API_BASE] };
 
   try {

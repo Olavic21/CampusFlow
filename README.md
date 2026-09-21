@@ -4,6 +4,7 @@ Application de visualisation des flux, localisation, navigation et intelligence 
 
 > Audit complet + roadmap réalisés ( voir [`docs/audit-roadmap.md`](docs/audit-roadmap.md) ).
 > Suite de tests backend reconstruite (55 tests, 0 échec). Qualité des données qualifiée (REAL/SIM/TWIN/STALE).
+> **Déploiement production : Vercel (frontend) + Oracle Cloud (backend) → [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md)**
 
 ```
 CampusFlow/
@@ -11,8 +12,9 @@ CampusFlow/
 ├── backend/      # FastAPI — API routes, IoT, routage, prévisions, RBAC
 ├── data/         # campus.json (38 bâtiments), capteurs, flux historique, schema.sql
 ├── ml/           # Modèle prédiction (optionnel, gardé derrière feature flag)
-├── docs/         # Documentation + rapport d'audit
-├── scripts/      # Build APK, restart backend, SDK Android...
+├── deploy/       # Déploiement Oracle Cloud (setup-vm.sh, systemd, Nginx, sauvegarde DB)
+├── docs/         # Documentation + rapport d'audit + guide de déploiement
+├── scripts/      # Build APK, restart backend, vérification de déploiement, SDK Android...
 └── android/      # Projet Capacitor (généré)
 ```
 
@@ -213,6 +215,30 @@ Installer Pillow : `pip install Pillow` (inclus dans `requirements.txt`).
 - Dijkstra : file de priorité (tas) au lieu d'un scan linéaire.
 - Occupation : couleurs/statuts pré-calculés via `useMemo`.
 - Marqueurs carte : `React.memo` avec comparateur ciblé.
+
+---
+
+## Déploiement en production — Vercel (frontend) + Oracle Cloud (backend)
+
+Guide complet : **[`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md)** (architecture, réseau, HTTPS, migrations, CORS, tests, maintenance).
+
+```bash
+# Backend — sur la VM Oracle Cloud (Ubuntu), depuis /opt/campusflow
+sudo API_DOMAIN=api-campusflow.<domaine> \
+     LETSENCRYPT_EMAIL=vous@example.com \
+     CORS_ORIGINS=https://<projet>.vercel.app \
+     bash deploy/oracle/setup-vm.sh        # PostgreSQL+PostGIS, systemd, Nginx, HTTPS, seed
+
+# Frontend — Vercel : Root Directory = frontend
+#   VITE_API_URL=https://api-campusflow.<domaine>
+#   VITE_WS_URL=wss://api-campusflow.<domaine>
+#   VITE_BACKEND_DIRECT=https://api-campusflow.<domaine>
+#   VITE_SENSOR_MODE=api
+
+# Vérification réelle après déploiement (API, base, CORS, frontend, absence de localhost)
+python scripts/verify_deployment.py --api https://<API_DOMAIN> \
+    --frontend https://<projet>.vercel.app --origin https://<projet>.vercel.app
+```
 
 ---
 

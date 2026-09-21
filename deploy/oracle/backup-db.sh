@@ -25,6 +25,8 @@ DB_URL="$(grep -E '^DATABASE_URL=' "${ENV_FILE}" | cut -d= -f2-)"
 DB_NAME="${DB_URL##*/}"
 DB_USER="${DB_URL#postgresql://}"; DB_USER="${DB_USER%%:*}"
 DB_PASSWORD="${DB_URL#postgresql://${DB_USER}:}"; DB_PASSWORD="${DB_PASSWORD%%@*}"
+# Mot de passe encodé dans DATABASE_URL (%40, %23, ...) : décoder pour PGPASSWORD
+DB_PASSWORD="$(printf '%b' "${DB_PASSWORD//%/\\x}")"
 DB_HOSTPORT="${DB_URL#*@}"; DB_HOST="${DB_HOSTPORT%%:*}"; DB_PORT="${DB_HOSTPORT#*:}"; DB_PORT="${DB_PORT%%/*}"
 
 mkdir -p "${BACKUP_DIR}"

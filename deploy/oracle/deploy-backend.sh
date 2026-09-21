@@ -19,6 +19,10 @@ SKIP_GIT="${SKIP_GIT:-0}"
 log()  { printf '\033[1;34m[deploy]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[warn  ]\033[0m %s\n' "$*"; }
 
+# Décode les séquences %XX écrites dans DATABASE_URL par setup-vm.sh
+# (mot de passe contenant des caractères réservés d'URL).
+urldecode() { printf '%b' "${1//%/\\x}"; }
+
 [[ $EUID -eq 0 ]] || { echo "À lancer en root (sudo)." >&2; exit 1; }
 
 cd "${APP_DIR}"
@@ -39,6 +43,7 @@ DB_URL="$(grep -E '^DATABASE_URL=' "${APP_DIR}/backend/.env" | cut -d= -f2-)"
 DB_NAME="${DB_URL##*/}"
 DB_USER="${DB_URL#postgresql://}"; DB_USER="${DB_USER%%:*}"
 DB_PASSWORD="${DB_URL#postgresql://${DB_USER}:}"; DB_PASSWORD="${DB_PASSWORD%%@*}"
+DB_PASSWORD="$(urldecode "${DB_PASSWORD}")"
 DB_HOSTPORT="${DB_URL#*@}"; DB_HOST="${DB_HOSTPORT%%:*}"; DB_PORT="${DB_HOSTPORT#*:}"; DB_PORT="${DB_PORT%%/*}"
 
 if command -v psql >/dev/null 2>&1 && [[ -f "${APP_DIR}/data/db/schema.sql" ]]; then

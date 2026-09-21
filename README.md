@@ -224,7 +224,8 @@ Guide complet : **[`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md)** (architecture, 
 
 ```bash
 # Backend — sur la VM Oracle Cloud (Ubuntu), depuis /opt/campusflow
-sudo API_DOMAIN=api-campusflow.<domaine> \
+sudo GIT_REF=mobile-release \
+     API_DOMAIN=api-campusflow.<domaine> \
      LETSENCRYPT_EMAIL=vous@example.com \
      CORS_ORIGINS=https://<projet>.vercel.app \
      bash deploy/oracle/setup-vm.sh        # PostgreSQL+PostGIS, systemd, Nginx, HTTPS, seed

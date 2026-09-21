@@ -22,6 +22,10 @@
 #   DB_PASSWORD           mot de passe PostgreSQL (si absent : généré aléatoirement)
 #   JWT_SECRET            secret JWT (si absent : généré aléatoirement, jamais affiché)
 #   REPO_URL              dépôt Git (défaut : dépôt GitHub officiel)
+#   GIT_REF               branche à déployer (défaut : main).
+#                         ⚠️ La branche DOIT contenir le dossier deploy/ ET être
+#                         POUSSÉE sur GitHub avant de lancer ce script
+#                         (ex. : git push origin mobile-release ; GIT_REF=mobile-release)
 #   SKIP_CERTBOT=1        ne pas demander de certificat (test HTTP uniquement)
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
@@ -45,6 +49,17 @@ SKIP_CERTBOT="${SKIP_CERTBOT:-0}"
 log()  { printf '\033[1;34m[setup]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[warn ]\033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31m[error]\033[0m %s\n' "$*" >&2; exit 1; }
+
+# Encode les caractères réservés d'URL d'un mot de passe pour construire DATABASE_URL.
+# (deploy-backend.sh et backup-db.sh décodent la valeur avec la fonction inverse)
+urlencode_password() {
+    local s="$1"
+    s="${s//%/%25}"
+    s="${s//@/%40}"; s="${s//:/%3A}"; s="${s//\//%2F}"
+    s="${s//#/%23}"; s="${s//\?/%3F}"; s="${s//&/%26}"
+    s="${s//=/%3D}"; s="${s//+/%2B}"; s="${s// /%20}"
+    printf '%s' "$s"
+}
 
 [[ $EUID -eq 0 ]] || die "Ce script doit être lancé en root (sudo)."
 
@@ -85,6 +100,12 @@ chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}" "${DATA_DIR}" "${LOG_DIR}"
 chmod 750 "${DATA_DIR}" "${LOG_DIR}"
 
 # ── 3. Code source ───────────────────────────────────────────────────────────
+# La branche doit exister côté distant (dépôt privé : utiliser une URL avec jeton
+# ou une clé de déploiement, sinon ce contrôle échoue).
+if ! sudo -u "${APP_USER}" git ls-remote --exit-code --heads "${REPO_URL}" "${GIT_REF}" >/dev/null 2>&1; then
+    die "Branche '${GIT_REF}' introuvable dans ${REPO_URL}. Poussez-la d'abord (git push origin ${GIT_REF}) ou passez GIT_REF=<autre-branche>."
+fi
+
 if [[ -d "${APP_DIR}/.git" ]]; then
     log "Dépôt déjà présent : mise à jour (git fetch + reset sur ${GIT_REF})..."
     sudo -u "${APP_USER}" git -C "${APP_DIR}" fetch --prune origin
@@ -95,13 +116,20 @@ else
     sudo -u "${APP_USER}" git clone --branch "${GIT_REF}" "${REPO_URL}" "${APP_DIR}"
 fi
 
+# Garde-fou : sans les scripts de déploiement, la suite ne peut pas fonctionner.
+[[ -f "${APP_DIR}/deploy/oracle/setup-vm.sh" ]] || die \
+    "deploy/oracle/setup-vm.sh absent de la branche '${GIT_REF}': cette branche ne contient pas les fichiers de déploiement (commits non poussés ?). Puis relancez avec GIT_REF=<branche>."
+log "Code source prêt : $(sudo -u "${APP_USER}" git -C "${APP_DIR}" rev-parse --short HEAD) sur ${GIT_REF}"
+
 # ── 4. Base de données PostgreSQL + PostGIS ──────────────────────────────────
 log "Configuration de PostgreSQL (base ${DB_NAME}, rôle ${DB_USER})..."
 if [[ -z "${DB_PASSWORD}" ]]; then
     DB_PASSWORD="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | cut -c1-24)"
 fi
-if [[ "${DB_PASSWORD}" =~ [@:/?\#\[\]] ]]; then
-    warn "DB_PASSWORD contient des caractères réservés d'URL : ils seront encodés dans DATABASE_URL."
+DB_PASSWORD_URL="$(urlencode_password "${DB_PASSWORD}")"
+DB_URL_ENC="postgresql://${DB_USER}:${DB_PASSWORD_URL}@127.0.0.1:5432/${DB_NAME}"
+if [[ "${DB_PASSWORD}" != "${DB_PASSWORD_URL}" ]]; then
+    log "DB_PASSWORD : caractères réservés encodés automatiquement dans DATABASE_URL (les scripts de maintenance décodent la valeur)."
 fi
 
 sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" | grep -q 1 \
@@ -141,7 +169,7 @@ PUBLIC_API_BASE="https://${API_DOMAIN}"
 umask 077
 cat > "${ENV_FILE}" <<EOF
 # Généré par deploy/oracle/setup-vm.sh — NE PAS COMMITTER
-DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD//@/%40}@127.0.0.1:5432/${DB_NAME}
+DATABASE_URL=${DB_URL_ENC}
 REDIS_URL=redis://127.0.0.1:6379/0
 
 CORS_ORIGINS=${CORS_ORIGINS}
@@ -172,7 +200,7 @@ chown "${APP_USER}:${APP_USER}" "${ENV_FILE}"
 
 # Migrations légères idempotentes (colonne users.role, index unique favoris)
 log "Application des migrations légères (init_db)..."
-sudo -u "${APP_USER}" env "DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@127.0.0.1:5432/${DB_NAME}" \
+sudo -u "${APP_USER}" env "DATABASE_URL=${DB_URL_ENC}" \
     bash -c "cd '${APP_DIR}/backend' && '${APP_DIR}/.venv/bin/python' -c 'from app.database.init_db import init_db; init_db(); print(\"migrations OK\")'"
 
 # Seed initial uniquement si la base est vide (38 bâtiments SUP'PTIC + flux récents)

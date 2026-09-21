@@ -66,6 +66,7 @@ Contraintes imposées par le projet existant :
 | Domaine | Pour HTTPS : `api-campusflow.duckdns.org` (gratuit) ou un sous-domaine de votre domaine → **enregistrement A vers l'IP publique de la VM** |
 | Compte Vercel | Accès au dépôt GitHub `nkoumougrinnel/CampusFlow` |
 | Accès SSH | Clé SSH associée à l'instance OCI |
+| Branche Git à déployer | La branche contenant le dossier **`deploy/`** doit être **poussée sur GitHub avant** de cloner la VM (aujourd'hui : `mobile-release`). Sinon `setup-vm.sh` s'arrête avec un message explicite |
 
 **Pourquoi HTTPS est obligatoire côté API :** le frontend est servi en HTTPS par Vercel ; un navigateur **bloque** tout `fetch` HTTPS → HTTP (contenu mixte). Sans certificat sur l'API, la seule alternative serait de proxifier `/api/*` depuis Vercel (voir § 6).
 
@@ -88,27 +89,36 @@ Ne jamais ouvrir 5432 (PostgreSQL), 6379 (Redis) ni 8000 (Uvicorn) : ils restent
 ### 3.2 Se connecter et récupérer le code
 
 ```bash
+# 1) Sur votre machine : pousser la branche qui contient deploy/ (sinon la VM ne l'aura pas)
+git push origin mobile-release          # adaptez le nom de la branche
+
+# 2) Sur la VM
 ssh -i ~/.ssh/<CLE_OCI>.key ubuntu@<IP_PUBLIQUE_VM>
 
 sudo apt-get update && sudo apt-get install -y git
-sudo git clone https://github.com/nkoumougrinnel/CampusFlow.git /opt/campusflow
+sudo git clone --branch mobile-release \
+    https://github.com/nkoumougrinnel/CampusFlow.git /opt/campusflow
 cd /opt/campusflow
 ```
+
+Le script vérifie automatiquement que la branche existe côté GitHub **et** qu'elle contient `deploy/oracle/setup-vm.sh` ; sinon il s'arrête avec la marche à suivre (`GIT_REF=<branche>`).
 
 ### 3.3 Provisionnement complet (script fourni)
 
 Le script installe et configure **tout** : paquets, PostgreSQL + PostGIS, Redis, venv Python, `.env`, migrations, seed, service systemd, Nginx, UFW, HTTPS Let's Encrypt, puis teste l'API.
 
 ```bash
-sudo API_DOMAIN=api-campusflow.duckdns.org \
+sudo GIT_REF=mobile-release \
+     API_DOMAIN=api-campusflow.duckdns.org \
      LETSENCRYPT_EMAIL=vous@example.com \
      CORS_ORIGINS=https://<PROJET>.vercel.app \
      bash deploy/oracle/setup-vm.sh
 ```
 
 - `DB_PASSWORD` et `JWT_SECRET` : **générés aléatoirement** s'ils ne sont pas fournis, écrits dans `/opt/campusflow/backend/.env` (chmod 600) et **jamais affichés**.
+- Un `DB_PASSWORD` fourni contenant des caractères réservés d'URL (`@ : / # ? & = + %`) est **encodé automatiquement** dans `DATABASE_URL` ; `deploy-backend.sh` et `backup-db.sh` décodent la valeur avant de l'utiliser (logique validée par test round-trip + parsing SQLAlchemy).
 - Le script est **idempotent** : le relancer met à jour le code et réapplique les migrations.
-- Options : `GIT_REF=main` (branche), `SKIP_CERTBOT=1` (sans domaine), `SEED=0` (ne pas injecter les données de démo), `REPO_URL=...` (fork).
+- Options : `GIT_REF=<branche>` (défaut `main`), `SKIP_CERTBOT=1` (sans domaine), `SEED=0` (ne pas injecter les données de démo), `REPO_URL=...` (fork).
 
 ### 3.4 Ce qui est configuré
 
@@ -294,6 +304,9 @@ Tests automatisés du dépôt (relancés après modification) :
 | Frontend | `cd frontend && npm test` | ✅ **17 passed** |
 | Lint des fichiers modifiés | `npx eslint src/services/sensorApi.js src/utils/avatar.js src/services/authApi.js` | ✅ 0 erreur |
 | Build de production | `cd frontend && npm run build` | ✅ `dist/` généré |
+| Syntaxe des scripts de déploiement | `bash -n` sur `setup-vm.sh`, `deploy-backend.sh`, `backup-db.sh` | ✅ 3/3 valides |
+| Encodage du mot de passe DB | round-trip `urlencode`/`urldecode` (bash) sur 3 mots de passe dont `Abc#123?x/y:z@w%v&k=l+m n` | ✅ 4/4 OK |
+| Validité de `DATABASE_URL` produite | `sqlalchemy.engine.make_url(...)` sur l'URL encodée | ✅ mot de passe décodé `Abc#123?x/y:z@w%v`, host/port/base corrects |
 
 ### 8.2 Vérifications à exécuter APRÈS la mise en ligne (non exécutables sans accès cloud)
 

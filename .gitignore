@@ -100,6 +100,9 @@ Thumbs.db
 .env.*
 !.env.example
 !**/.env.example
+# Gabarits de déploiement : .env.production.example, .env.db.example, ...
+# (aucune valeur réelle de secret — uniquement des placeholders <...>)
+!**/.env.*.example
 
 # ── APK / Capacitor ────────────────────────────────────────────────
 *.apk

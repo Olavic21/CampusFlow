@@ -25,6 +25,9 @@ class Settings:
         for o in os.getenv("CORS_ORIGINS", _DEFAULT_CORS).split(",")
         if o.strip()
     ]
+    # Regex optionnelle (ex. previews Vercel : https://.*\.vercel\.app).
+    # Vide par défaut : seules les origines explicites ci-dessus sont acceptées.
+    CORS_ORIGIN_REGEX: str = os.getenv("CORS_ORIGIN_REGEX", "").strip()
     ML_MODEL_PATH: str = os.getenv("ML_MODEL_PATH", "../ml/model.pkl")
     JWT_SECRET: str = os.getenv("JWT_SECRET", "change-me-campusflow-dev-secret-key-32chars")
     JWT_ALGORITHM: str = "HS256"

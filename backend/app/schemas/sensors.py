@@ -38,6 +38,21 @@ class SensorTestDataIn(BaseModel):
     confidence_score: float = Field(1.0, ge=0.0, le=1.0)
 
 
+class SensorCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=255, description="Nom unique du capteur")
+    location_id: int = Field(..., description="Bâtiment rattaché (location_id)")
+    sensor_type: str = Field("counter", description="counter | camera | rfid | infrared")
+    source: Optional[str] = Field("api", description="Source des lectures (api | mqtt)")
+    mark_online: bool = Field(True, description="Poser last_seen au dépôt")
+
+
+class SensorUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=255)
+    location_id: Optional[int] = None
+    sensor_type: Optional[str] = None
+    status: Optional[str] = Field(None, description="online | offline | error | maintenance")
+
+
 class SensorModeOut(BaseModel):
     mode: str
     is_real: bool

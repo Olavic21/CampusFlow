@@ -6,7 +6,7 @@ de dev/test.
 """
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.database.models import Flux
 from app.database.session import engine
 
@@ -17,7 +17,7 @@ def _is_postgres() -> bool:
 
 def get_live_flux(db: Session, window_minutes: int = 5) -> list[dict]:
     """Agrège les flux des `window_minutes` dernières minutes par salle."""
-    since = datetime.utcnow() - timedelta(minutes=window_minutes)
+    since = datetime.now(tz=timezone.utc) - timedelta(minutes=window_minutes)
 
     results = (
         db.query(
@@ -35,7 +35,7 @@ def get_live_flux(db: Session, window_minutes: int = 5) -> list[dict]:
         {
             "location_id":   r.location_id,
             "nombre_etudiants": int(r.avg_students or 0),
-            "timestamp":     r.timestamp.isoformat() if r.timestamp else datetime.utcnow().isoformat(),
+            "timestamp":     r.timestamp.isoformat() if r.timestamp else datetime.now(tz=timezone.utc).isoformat(),
         }
         for r in results
     ]

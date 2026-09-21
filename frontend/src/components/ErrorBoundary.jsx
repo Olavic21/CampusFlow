@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import BrandLogo from './brand/BrandLogo';
 
 export default class ErrorBoundary extends Component {
   state = { hasError: false, error: null };
@@ -22,9 +23,7 @@ export default class ErrorBoundary extends Component {
           className="min-h-[100dvh] flex flex-col items-center justify-center bg-slate-900 text-white p-6 text-center"
           role="alert"
         >
-          <p className="text-4xl mb-4" aria-hidden="true">
-            ⚠️
-          </p>
+          <BrandLogo variant="icon" className="!h-16 !w-16 mb-5" />
           <h1 className="text-xl font-bold mb-2">Une erreur est survenue</h1>
           <p className="text-slate-400 text-sm max-w-md mb-6">
             L&apos;application a rencontré un problème inattendu. Rechargez la page ou réessayez.

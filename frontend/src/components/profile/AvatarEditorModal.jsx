@@ -38,6 +38,16 @@ export default function AvatarEditorModal({
     if (!open) reset();
   }, [open, reset]);
 
+  // A11y : fermeture Escape (audit P1)
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
   const handleFile = useCallback((file, source) => {
     const err = validateAvatarFile(file);
     if (err) {

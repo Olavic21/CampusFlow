@@ -5,7 +5,11 @@ import {
   PLAN_VIEWBOX,
 } from './campusLayoutData';
 import { CATEGORY_LABELS, getBuildingMeta } from './buildingMeta';
-import { getCongestionLevel } from '../utils/congestionColor';
+import {
+  getCongestionLevel,
+  TWIN_DEMO,
+  getTwinDemoOccupancy,
+} from '../utils/congestionColor';
 import {
   buildPlanGpsTransform,
   resolveBuildingGps,
@@ -134,11 +138,13 @@ export class CampusLayoutEngine {
       if (geo) occ = occupancy[geo.id];
     }
     if (!occ) {
-      const hash = twin.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const taux = ((hash % 70) + 10) / 100;
-      occ = { count: Math.round(twin.capacite * taux), taux, capacite: twin.capacite };
+      // Jumeau sans capteur : occupation INDICATIVE marquée "Démo" —
+      // jamais présentée comme un état réel (audit P0-5).
+      occ = getTwinDemoOccupancy(twin);
     }
-    const { color, label, level } = getCongestionLevel(occ.taux ?? 0);
+    const { color, label, level } = occ.simulated
+      ? TWIN_DEMO
+      : getCongestionLevel(occ.taux ?? 0);
     const meta = getBuildingMeta(twin);
     const geo = geoId != null ? geoBuildings.find((g) => g.id === geoId) : null;
     return {
@@ -160,6 +166,7 @@ export class CampusLayoutEngine {
       occupancy: occ,
       count: occ.count ?? 0,
       taux: occ.taux ?? 0,
+      simulated: !!occ.simulated,
       color,
       congestionLabel: label,
       level,

@@ -13,6 +13,21 @@ class OccupancyHub:
     def __init__(self) -> None:
         self._clients: set[WebSocket] = set()
         self._lock = asyncio.Lock()
+        self._loop: asyncio.AbstractEventLoop | None = None
+
+    def set_loop(self, loop: asyncio.AbstractEventLoop) -> None:
+        """Enregistre la boucle principale — permet la diffusion depuis un thread (MQTT)."""
+        self._loop = loop
+
+    def broadcast_threadsafe(self, payload: dict[str, Any]) -> None:
+        """Diffusion depuis un thread non-asyncio (callback paho-mqtt)."""
+        loop = self._loop
+        if loop is None or loop.is_closed():
+            return
+        try:
+            asyncio.run_coroutine_threadsafe(self.broadcast(payload), loop)
+        except RuntimeError:
+            pass
 
     async def connect(self, ws: WebSocket) -> None:
         await ws.accept()

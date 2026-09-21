@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional
 
 
@@ -15,3 +16,18 @@ class LocationOut(LocationBase):
 
     class Config:
         from_attributes = True
+
+
+class LocationFreeOut(BaseModel):
+    """Bâtiment libre MAINTENANT — « salle libre » (Phase 3)."""
+
+    id: int
+    nom: str
+    type: str
+    capacite: int
+    latitude: float
+    longitude: float
+    count: int
+    occupancy_rate: float
+    last_update: datetime
+    is_stale: bool = False

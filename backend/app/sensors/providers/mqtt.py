@@ -21,4 +21,4 @@ class MQTTProvider(BaseSensorProvider):
         return "Données MQTT"
 
     def get_latest_occupancy(self, db: Session) -> list[dict[str, Any]]:
-        return get_latest_readings_from_db(db, source_filter="mqtt")
+        return get_latest_readings_from_db(db)

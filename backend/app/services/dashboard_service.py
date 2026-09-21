@@ -4,11 +4,11 @@ dashboard_service.py — Statistiques globales pour le tableau de bord frontend.
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, cast, Float
 from app.database.models import Flux, Feedback, Location
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def get_dashboard_stats(db: Session, period: str = "week") -> dict:
-    end = datetime.utcnow()
+    end = datetime.now(tz=timezone.utc)
     if period == "day":
         start = end - timedelta(days=1)
     elif period == "week":

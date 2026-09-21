@@ -43,7 +43,7 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthLayout title="Connexion" subtitle="SUP'PTIC Yaoundé — CampusFlow Lite">
+    <AuthLayout title="Connexion" subtitle="SUP'PTIC Yaoundé — CampusFlow">
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
           <label htmlFor="login" className="cf-menu-label">

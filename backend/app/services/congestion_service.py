@@ -6,7 +6,7 @@ et niveau_congestion), avec cache Redis 60 s.
 """
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.utils.redis_client import redis_client
 from app.database.models import Flux, Location
 from app.services.congestion_levels import congestion_level_from_taux
@@ -41,7 +41,7 @@ def get_congestion(db: Session, location_id: int = None) -> list[dict]:
             pass
 
     # ── Calcul depuis PostgreSQL ──────────────────────────────────────────────
-    since = datetime.utcnow() - timedelta(minutes=5)
+    since = datetime.now(tz=timezone.utc) - timedelta(minutes=5)
 
     query = (
         db.query(
@@ -73,7 +73,7 @@ def get_congestion(db: Session, location_id: int = None) -> list[dict]:
             "level":          level,
             "occupancy_rate": round(occupancy_rate, 2),
             "current_count":  int(avg_students),
-            "updated_at":     (last_update or datetime.utcnow()).isoformat(),
+            "updated_at":     (last_update or datetime.now(tz=timezone.utc)).isoformat(),
         }
         congestion_data.append(data)
         redis_client.setex(f"congestion:{loc_id}", 60, json.dumps(data))

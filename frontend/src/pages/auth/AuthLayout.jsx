@@ -29,7 +29,7 @@ export default function AuthLayout({ children, title, subtitle }) {
         className="auth-card cf-menu-card shadow-2xl flex flex-col w-full max-w-md"
       >
         <header className="auth-card-header shrink-0 px-6 pt-6 pb-4 text-center border-b border-slate-200/60 dark:border-slate-700/50">
-          <BrandLogo variant="icon" className="!h-12 !w-12 mx-auto mb-3" />
+          <BrandLogo variant="splash" className="mb-3" />
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h1>
           {subtitle && (
             <p className="text-sm text-slate-500 mt-1">{subtitle}</p>

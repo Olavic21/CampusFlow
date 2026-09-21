@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, useRef, memo } from 'react';
-import { MapContainer, TileLayer, Polyline, Marker, ScaleControl, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Marker, ScaleControl, useMap, Circle } from 'react-leaflet';
 import { Crosshair, LocateFixed, Maximize2, Navigation2 } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -210,6 +210,7 @@ function CampusMap({
   onStepPrev,
   onStepNext,
   stepFocusToken = 0,
+  livePosition = null,
 }) {
   const gpsBuildings = useMemo(
     () => CampusLayoutEngine.getGpsBuildings(occupancy, buildings),
@@ -292,6 +293,13 @@ function CampusMap({
   const [userPosition, setUserPosition] = useState(null);
   const [mapFollowEnabled, setMapFollowEnabled] = useState(true);
   const leafletMapRef = useRef(null);
+
+  // Position GPS live (navigation, Phase 2) — la prop externe prime sur le one-shot
+  useEffect(() => {
+    if (livePosition?.lat != null) {
+      setUserPosition([livePosition.lat, livePosition.lng]);
+    }
+  }, [livePosition]);
 
   useEffect(() => {
     if (!navigationMode) {
@@ -394,7 +402,19 @@ function CampusMap({
         />
 
         {userPosition && (
-          <Marker position={userPosition} icon={userLocationIcon} zIndexOffset={1500} />
+          <>
+            <Circle
+              center={userPosition}
+              radius={livePosition?.accuracy ? Math.min(livePosition.accuracy, 80) : 20}
+              pathOptions={{
+                color: '#2563EB',
+                weight: 1,
+                fillColor: '#2563EB',
+                fillOpacity: 0.15,
+              }}
+            />
+            <Marker position={userPosition} icon={userLocationIcon} zIndexOffset={1500} />
+          </>
         )}
 
         {filteredBuildings.map((b) => (

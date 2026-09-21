@@ -6,7 +6,7 @@ def test_get_congestion_no_cache(client, db_session, sample_locations, sample_fl
     response = client.get("/congestion")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 2  # seulement les actifs avec flux
+    assert len(data) == 3  # un niveau par bâtiment avec du flux récent
     assert "level" in data[0]
     assert 0 <= data[0]["occupancy_rate"] <= 1
 

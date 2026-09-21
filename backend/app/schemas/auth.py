@@ -32,6 +32,7 @@ class UserOut(BaseModel):
     full_name: str
     email: str
     username: str
+    role: str = "student"
     avatar: Optional[str] = None
     created_at: datetime
     last_login: Optional[datetime] = None

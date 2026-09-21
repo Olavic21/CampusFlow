@@ -79,6 +79,7 @@ export default function BuildingPopup({
             </AreaChart>
           </ResponsiveContainer>
         </div>
+        <p className="text-[10px] text-slate-400 mt-1">Profil indicatif — données de référence</p>
       </div>
 
       <div className="text-xs text-slate-500 space-y-1 mb-4">

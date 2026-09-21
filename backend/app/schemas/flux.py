@@ -1,12 +1,16 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 
 class FluxLiveResponse(BaseModel):
     location_id: int
     nombre_etudiants: int
     timestamp: datetime
+    # Qualification de fraîcheur (data_quality) — honnêteté des données
+    is_stale: bool = False
+    source: Optional[str] = None
+    confidence_score: Optional[float] = None
 
 
 class FluxHistoryPoint(BaseModel):

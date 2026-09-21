@@ -14,11 +14,13 @@ import {
 } from './services/authApi';
 import PathFinder from './components/PathFinder';
 import ControlPanel from './components/ControlPanel';
+import OnboardingOverlay from './components/OnboardingOverlay';
 import ToastStack from './components/ToastStack';
 import MapLoadingOverlay from './components/MapLoadingOverlay';
 import SplashScreen from './components/SplashScreen';
 import AppNav from './components/AppNav';
 import BrandLogo from './components/brand/BrandLogo';
+import CampusStatusChip from './components/CampusStatusChip';
 import BuildingSheet from './components/BuildingSheet';
 import SettingsPanel from './components/SettingsPanel';
 import { useCongestion } from './hooks/useCongestion';
@@ -28,6 +30,9 @@ import { usePathfinder } from './hooks/usePathfinder';
 import { useSimulation } from './hooks/useSimulation';
 import { useMediaQuery } from './hooks/useMediaQuery';
 import { useToast } from './hooks/useToast';
+import { useSaturationAlerts } from './hooks/useSaturationAlerts';
+import { useGeolocation } from './hooks/useGeolocation';
+import { haversine } from './utils/haversine';
 import { useTheme } from './hooks/useTheme';
 import { buildNavigationSteps } from './utils/navigationSteps';
 import { resolveBuilding, safeOccupancy } from './utils/buildingSafety';
@@ -71,7 +76,13 @@ export default function App() {
 function CampusFlowMain() {
   const simulation = useSimulation();
   return (
-    <SensorDataProvider simulatedTime={simulation.simulatedTime}>
+    <SensorDataProvider
+      // Bug P0 corrigé : simulatedTime n'est transmis qu'en mode démo explicite.
+      // Avant, l'app tournait en permanence sur capteurs.json (statique) même en
+      // mode API — les données live n'arrivaient que par le WebSocket, en concurrence.
+      simulatedTime={simulation.demoMode ? simulation.simulatedTime : null}
+      demo={simulation.demoMode}
+    >
       <CampusFlowShell simulation={simulation} />
     </SensorDataProvider>
   );
@@ -81,8 +92,13 @@ function CampusFlowShell({ simulation }) {
   const { user, logout } = useAuth();
   const isMobile = !useMediaQuery('(min-width: 768px)');
   const { darkMode, setDarkMode, toggleDarkMode } = useTheme();
-  const { buildings, occupancy, offline, loading, globalStats } = useCongestion();
-  const pathfinder = usePathfinder(buildings, occupancy);
+  const { buildings, occupancy, offline, loading, globalStats, demo, incidents } =
+    useCongestion();
+  const blockedLocationIds = useMemo(
+    () => (incidents || []).map((i) => i.location_id),
+    [incidents],
+  );
+  const pathfinder = usePathfinder(buildings, occupancy, blockedLocationIds);
   const { toasts, push, dismiss } = useToast();
 
   const [activeView, setActiveView] = useState('map');
@@ -107,6 +123,25 @@ function CampusFlowShell({ simulation }) {
   const prevOfflineRef = useRef(null);
   const [favByLocation, setFavByLocation] = useState({});
 
+  // GPS continu uniquement pendant la navigation (batterie / confidentialité)
+  const { position: userPosition } = useGeolocation({ enabled: navigationMode });
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try {
+      return !localStorage.getItem('cf_onboarding_seen_v1');
+    } catch {
+      return false;
+    }
+  });
+
+  const finishOnboarding = useCallback(() => {
+    try {
+      localStorage.setItem('cf_onboarding_seen_v1', '1');
+    } catch {
+      /* stockage indisponible */
+    }
+    setShowOnboarding(false);
+  }, []);
+
   useEffect(() => {
     if (!user) {
       setFavByLocation({});
@@ -127,7 +162,7 @@ function CampusFlowShell({ simulation }) {
       push('success', 'Compte créé avec succès');
       sessionStorage.removeItem('cf_just_registered');
     } else if (sessionStorage.getItem('cf_just_logged_in')) {
-      push('success', 'Bienvenue sur CampusFlow Lite');
+      push('success', 'Bienvenue sur CampusFlow');
       sessionStorage.removeItem('cf_just_logged_in');
     }
   }, [user, push]);
@@ -155,6 +190,78 @@ function CampusFlowShell({ simulation }) {
     },
     [user, favByLocation, push],
   );
+
+  // ── Alertes de saturation ciblées (favoris + itinéraire actif) — Phase 2 ──
+  const notifyNative = useCallback(async (title, body) => {
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      if (!Capacitor.isNativePlatform?.()) return;
+      const { LocalNotifications } = await import('@capacitor/local-notifications');
+      const perm = await LocalNotifications.requestPermissions();
+      if (perm.display === 'granted' || perm.display === 'prompt') {
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              id: Date.now() % 2147483647,
+              title,
+              body,
+              schedule: { at: new Date(Date.now() + 1000) },
+            },
+          ],
+        });
+      }
+    } catch {
+      /* web ou permission refusée — le toast suffit */
+    }
+  }, []);
+
+  const handleSaturationAlert = useCallback(
+    (id) => {
+      const name = buildings.find((b) => b.id === Number(id))?.nom ?? `Bâtiment ${id}`;
+      push('saturation', `🔴 ${name} est maintenant saturé`);
+      notifyNative(
+        'CampusFlow — Affluence',
+        `${name} est maintenant saturé. Envisagez un autre créneau.`,
+      );
+    },
+    [buildings, push, notifyNative],
+  );
+
+  const watchIds = useMemo(() => {
+    const ids = new Set();
+    for (const id of Object.keys(favByLocation)) ids.add(Number(id));
+    for (const id of pathfinder.pathIdsOnMap ?? []) {
+      const n = Number(id);
+      if (Number.isFinite(n)) ids.add(n);
+    }
+    return [...ids];
+  }, [favByLocation, pathfinder.pathIdsOnMap]);
+
+  useSaturationAlerts({
+    occupancy,
+    watchIds,
+    enabled: !demo,
+    onAlert: handleSaturationAlert,
+  });
+
+  // Détection hors itinéraire (navigation GPS — Phase 2)
+  const offRouteAtRef = useRef(0);
+  useEffect(() => {
+    if (!navigationMode || !userPosition) return undefined;
+    const coords = pathfinder.activeRoute?.result?.coords ?? [];
+    if (coords.length < 2) return undefined;
+    let minDist = Infinity;
+    for (const [lat, lng] of coords) {
+      const d = haversine(userPosition.lat, userPosition.lng, lat, lng);
+      if (d < minDist) minDist = d;
+    }
+    const now = Date.now();
+    if (minDist > 80 && now - offRouteAtRef.current > 60000) {
+      offRouteAtRef.current = now;
+      push('warning', 'Vous êtes hors itinéraire — recentrez-vous sur le tracé');
+    }
+    return undefined;
+  }, [userPosition, navigationMode, pathfinder.activeRoute, push]);
 
   const simulationHour = useMemo(
     () => parseSimulationHour(simulation.formattedTime),
@@ -459,6 +566,10 @@ function CampusFlowShell({ simulation }) {
     >
       <AnimatePresence>{showSplash && <SplashScreen visible />}</AnimatePresence>
 
+      <AnimatePresence>
+        {showOnboarding && <OnboardingOverlay onFinish={finishOnboarding} />}
+      </AnimatePresence>
+
       {!isMobile && (
         <AppNav
           activeView={activeView}
@@ -475,8 +586,9 @@ function CampusFlowShell({ simulation }) {
 
       <div className={`flex-1 flex flex-col min-w-0 min-h-0 ${isMobile ? 'pb-nav' : ''}`}>
         {isMobile && (activeView === 'map' || activeView === 'route') && (
-          <div className="shrink-0 cf-glass border-b border-white/20 px-4 py-2.5 flex items-center justify-center z-[400]">
+          <div className="shrink-0 cf-glass border-b border-white/20 px-4 py-2.5 flex items-center justify-between gap-2 z-[400]">
             <BrandLogo variant="mobile" />
+            <CampusStatusChip />
           </div>
         )}
 
@@ -554,6 +666,8 @@ function CampusFlowShell({ simulation }) {
                 activeStepIndex={guideStepIndex}
                 onStepSelect={handleGuideStepSelect}
                 onSaveRouteFavorite={user ? handleSaveRouteFavorite : undefined}
+                profile={pathfinder.profile}
+                onProfileChange={pathfinder.setProfile}
               />
             )}
 
@@ -565,6 +679,12 @@ function CampusFlowShell({ simulation }) {
                   filters={filters}
                   setFilters={setFilters}
                   simulation={simulation}
+                  demoMode={simulation.demoMode}
+                  onEnterDemo={simulation.enterDemo}
+                  onExitDemo={() => {
+                    simulation.reset();
+                    push('info', 'Retour aux données temps réel');
+                  }}
                   onSearchSelect={handleBuildingSelect}
                   onExport={handleExport}
                   darkMode={darkMode}
@@ -627,6 +747,7 @@ function CampusFlowShell({ simulation }) {
                     onStepPrev={handleStepPrev}
                     onStepNext={handleStepNext}
                     stepFocusToken={stepFocusToken}
+                    livePosition={userPosition}
                   />
                 )}
               </Suspense>

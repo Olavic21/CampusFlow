@@ -1,14 +1,15 @@
 """Ingestion unifiée — SensorReading + Flux + mise à jour capteur."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from sqlalchemy import func
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
 
 from app.database.models import Flux, Location, Sensor, SensorReading
 from app.services.congestion_levels import congestion_level_from_taux, db_value_for_level
+from app.services import data_quality as dq
 
-# Compteur global (dashboard IoT)
+# Compteur global (dashboard IoT) — reset au restart, fallback DB prévu
 _readings_count = 0
 _last_sync: datetime | None = None
 
@@ -19,6 +20,20 @@ def get_readings_count() -> int:
 
 def get_last_sync() -> datetime | None:
     return _last_sync
+
+
+def get_readings_count_or_db(db: Session) -> int:
+    """Compteur en mémoire, sinon comptage DB (survit au restart)."""
+    if _readings_count:
+        return _readings_count
+    return db.query(func.count(SensorReading.id)).scalar() or 0
+
+
+def get_last_sync_or_db(db: Session) -> datetime | None:
+    """Dernière sync en mémoire, sinon max(timestamp) en DB."""
+    if _last_sync:
+        return _last_sync
+    return db.query(func.max(SensorReading.timestamp)).scalar()
 
 
 def _niveau_congestion(ratio: float) -> str:
@@ -53,7 +68,7 @@ def ingest_sensor_reading(
     if not loc:
         raise ValueError(f"Bâtiment inconnu : {location_id}")
 
-    ts = timestamp or datetime.utcnow()
+    ts = timestamp or datetime.now(tz=timezone.utc)
     sensor = _resolve_sensor(db, location_id, sensor_id)
 
     if sensor:
@@ -102,33 +117,52 @@ def ingest_sensor_reading(
 def get_latest_readings_from_db(
     db: Session,
     *,
-    source_filter: str | None = None,
     window_minutes: int = 5,
 ) -> list[dict[str, Any]]:
-    since = datetime.utcnow() - timedelta(minutes=window_minutes)
-    q = (
+    """
+    Dernier état d'occupation par bâtiment — TOUTES sources confondues
+    (simulation, api, mqtt, websocket). Les sources coexistent : la plus
+    récente gagne, chaque lecture est qualifiée par `is_stale` / `source`
+    (honnêteté des données — voir app/services/data_quality.py).
+    """
+    now = datetime.now(timezone.utc)
+
+    # Dernier timestamp par bâtiment, toutes sources confondues
+    sub = (
+        db.query(
+            SensorReading.location_id.label("loc_id"),
+            func.max(SensorReading.timestamp).label("ts"),
+        )
+        .group_by(SensorReading.location_id)
+        .subquery()
+    )
+    rows = (
         db.query(
             SensorReading.location_id,
             func.avg(SensorReading.occupancy).label("avg_occ"),
-            func.max(SensorReading.timestamp).label("ts"),
             func.max(SensorReading.source).label("src"),
             func.avg(SensorReading.confidence_score).label("conf"),
         )
-        .filter(SensorReading.timestamp >= since)
+        .join(
+            sub,
+            and_(
+                SensorReading.location_id == sub.c.loc_id,
+                SensorReading.timestamp == sub.c.ts,
+            ),
+        )
         .group_by(SensorReading.location_id)
+        .all()
     )
-    if source_filter:
-        q = q.filter(SensorReading.source == source_filter)
 
-    rows = q.all()
     if rows:
         return [
             {
                 "building_id": r.location_id,
                 "occupancy": int(r.avg_occ or 0),
-                "timestamp": r.ts.isoformat() if r.ts else datetime.utcnow().isoformat(),
+                "timestamp": r.timestamp.isoformat() if r.timestamp else now.isoformat(),
                 "source": r.src or "unknown",
                 "confidence_score": float(r.conf or 1.0),
+                "is_stale": dq.is_stale(r.timestamp, now),
             }
             for r in rows
         ]
@@ -136,16 +170,24 @@ def get_latest_readings_from_db(
     # Fallback : table flux si pas encore de sensor_readings
     from app.services.flux_service import get_live_flux
 
-    return [
-        {
-            "building_id": r["location_id"],
-            "occupancy": r["nombre_etudiants"],
-            "timestamp": r["timestamp"],
-            "source": "flux",
-            "confidence_score": 1.0,
-        }
-        for r in get_live_flux(db, window_minutes)
-    ]
+    result = []
+    for r in get_live_flux(db, window_minutes):
+        ts = r.get("timestamp")
+        try:
+            dt = datetime.fromisoformat(ts) if isinstance(ts, str) else ts
+        except (ValueError, TypeError):
+            dt = None
+        result.append(
+            {
+                "building_id": r["location_id"],
+                "occupancy": r["nombre_etudiants"],
+                "timestamp": ts or now.isoformat(),
+                "source": "flux",
+                "confidence_score": 1.0,
+                "is_stale": dq.is_stale(dt, now),
+            }
+        )
+    return result
 
 
 def ensure_sensors_seeded(db: Session) -> int:
@@ -163,7 +205,7 @@ def ensure_sensors_seeded(db: Session) -> int:
                 sensor_type="counter",
                 status="online",
                 source="simulation",
-                last_seen=datetime.utcnow(),
+                last_seen=datetime.now(tz=timezone.utc),
             )
         )
         created += 1

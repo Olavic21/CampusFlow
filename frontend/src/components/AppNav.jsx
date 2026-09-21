@@ -89,7 +89,7 @@ function AppNav({ activeView, onViewChange, isMobile, user, onProfile, onLogout 
           <UserMenu user={user} onProfile={onProfile} onLogout={onLogout} />
         </div>
       )}
-      <p className="p-4 text-[10px] text-slate-400">SUP&apos;PTIC · Yaoundé</p>
+      <p className="p-4 text-[10px] text-slate-400">Jumeau numérique · SUP&apos;PTIC Yaoundé</p>
     </aside>
   );
 }

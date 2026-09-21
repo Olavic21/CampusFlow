@@ -24,6 +24,10 @@ function loadFromCapteursJson(buildings, hour, minute) {
       count,
       taux: b.capacite > 0 ? count / b.capacite : 0,
       capacite: b.capacite,
+      // Mode démo explicite — courbe historique, jamais un état temps réel
+      demo: true,
+      simulated: true,
+      source: 'simulation',
     };
   }
   return map;
@@ -33,11 +37,19 @@ function mapLiveFluxToOccupancy(data, buildings) {
   const map = {};
   for (const b of buildings) {
     const entry = data.find((d) => d.location_id === b.id);
-    const count = entry?.nombre_etudiants ?? 0;
+    if (!entry) {
+      // Aucune lecture récente → état inconnu explicite (pas de faux zéro)
+      map[b.id] = { unknown: true, count: null, taux: null, capacite: b.capacite };
+      continue;
+    }
+    const count = entry.nombre_etudiants ?? 0;
     map[b.id] = {
       count,
       taux: b.capacite > 0 ? count / b.capacite : 0,
       capacite: b.capacite,
+      stale: entry.is_stale ?? false,
+      source: entry.source ?? 'flux',
+      asOf: entry.timestamp ?? null,
     };
   }
   return map;
@@ -47,11 +59,18 @@ function mapWsReadingsToOccupancy(readings, buildings) {
   const map = {};
   for (const b of buildings) {
     const entry = readings.find((d) => (d.building_id ?? d.location_id) === b.id);
-    const count = entry?.occupancy ?? entry?.nombre_etudiants ?? 0;
+    if (!entry) {
+      map[b.id] = { unknown: true, count: null, taux: null, capacite: b.capacite };
+      continue;
+    }
+    const count = entry.occupancy ?? entry.nombre_etudiants ?? 0;
     map[b.id] = {
       count,
       taux: b.capacite > 0 ? count / b.capacite : 0,
       capacite: b.capacite,
+      stale: entry.is_stale ?? false,
+      source: entry.source ?? 'ws',
+      asOf: entry.timestamp ?? null,
     };
   }
   return map;
@@ -88,13 +107,14 @@ export async function fetchOccupancyApi(buildings) {
   return { raw: mapLiveFluxToOccupancy(data, buildings), offline: false };
 }
 
-/** Provider simulation locale — capteurs.json. */
+/** Provider simulation locale — capteurs.json (mode démo / fallback offline). */
 export function fetchOccupancySimulation(buildings, simulatedTime) {
   const hour = simulatedTime?.hour ?? 9;
   const minute = simulatedTime?.minute ?? 0;
   return {
     raw: loadFromCapteursJson(buildings, hour, minute),
-    offline: true,
+    offline: false,
+    demo: true,
     source: 'simulation',
   };
 }
@@ -140,6 +160,7 @@ export function createWebSocketProvider(buildings, onUpdate, onError) {
 }
 
 export async function fetchOccupancy(mode, buildings, simulatedTime) {
+  // Mode démo explicite (slider temps) ou simulation imposée
   if (simulatedTime || mode === 'simulation') {
     return fetchOccupancySimulation(buildings, simulatedTime);
   }
@@ -147,13 +168,13 @@ export async function fetchOccupancy(mode, buildings, simulatedTime) {
     try {
       return await fetchOccupancyApi(buildings);
     } catch {
-      return fetchOccupancySimulation(buildings, simulatedTime);
+      return { ...fetchOccupancySimulation(buildings, null), offline: true, demo: false };
     }
   }
   try {
     return await fetchOccupancyApi(buildings);
   } catch {
-    const now = { hour: 9, minute: 0 };
-    return fetchOccupancySimulation(buildings, now);
+    // API injoignable : fallback capteurs.json marqué OFFLINE (pas "démo" fun)
+    return { ...fetchOccupancySimulation(buildings, null), offline: true, demo: false };
   }
 }

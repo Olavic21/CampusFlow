@@ -6,7 +6,7 @@ Usage (depuis backend/) :
 """
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from app.database.session import SessionLocal, engine, Base
@@ -43,7 +43,7 @@ def seed_database(db: Session) -> None:
     db.commit()
 
     # Flux récents : capteurs.json remappés sur les 2 derniers jours (pour /flux/live)
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
     if CAPTEURS_JSON.exists():
         with CAPTEURS_JSON.open(encoding="utf-8") as f:
             capteurs = json.load(f)
@@ -74,7 +74,7 @@ def seed_database(db: Session) -> None:
         print(f"  {count} enregistrements flux (capteurs remappés)")
     else:
         # Fallback : générer flux récents pour chaque bâtiment
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
         for loc in db.query(Location).all():
             for h in range(-48, 0):
                 ts = now + timedelta(hours=h)
@@ -93,7 +93,7 @@ def seed_database(db: Session) -> None:
         db.commit()
 
     # Feedbacks de démo
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
     for i in range(30):
         db.add(Feedback(
             etudiant_id=1000 + i,

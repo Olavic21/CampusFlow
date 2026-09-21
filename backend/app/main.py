@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -20,10 +21,14 @@ from app.routers import (
     profile,
     sensors,
     ws,
+    incidents,
+    admin,
 )
 from app.utils.errors import http_exception_handler, validation_exception_handler
 from app.utils.logging_config import setup_logging
 from fastapi.exceptions import RequestValidationError
+
+logger = logging.getLogger("campusflow.main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,6 +37,8 @@ async def lifespan(app: FastAPI):
     from app.sensors.services.ingest import ensure_sensors_seeded
     from app.sensors.simulators.engine import get_simulator
     from app.sensors.mqtt.client import start_mqtt_listener
+    from app.sensors.websocket.hub import occupancy_hub
+    from app.services.retention_service import retention_loop
     from app.utils.avatar_storage import ensure_avatar_dir
 
     setup_logging()
@@ -43,20 +50,28 @@ async def lifespan(app: FastAPI):
         if n:
             print(f"  {n} capteurs simulés créés")
 
+    # Pont thread-safe pour les callbacks MQTT (paho tourne dans son propre thread)
+    occupancy_hub.set_loop(asyncio.get_running_loop())
+
+    mode = settings.SENSOR_MODE
     sim_task = None
-    if settings.SENSOR_MODE == "simulation":
+    if mode in ("simulation", "hybrid"):
         sim_task = asyncio.create_task(get_simulator().run_forever())
-    elif settings.SENSOR_MODE == "mqtt":
-        start_mqtt_listener()
+    if mode in ("mqtt", "hybrid"):
+        if not start_mqtt_listener():
+            logger.warning("MQTT demandé mais indisponible — vérifier MQTT_BROKER_URL et paho-mqtt")
+
+    retention_task = asyncio.create_task(retention_loop())
 
     yield
 
-    if sim_task:
-        sim_task.cancel()
-        try:
-            await sim_task
-        except asyncio.CancelledError:
-            pass
+    for task in (sim_task, retention_task):
+        if task:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 app = FastAPI(
@@ -93,6 +108,8 @@ app.include_router(users.router)
 app.include_router(profile.router)
 app.include_router(sensors.router)
 app.include_router(ws.router)
+app.include_router(incidents.router)
+app.include_router(admin.router)
 
 _media_path = Path(settings.MEDIA_ROOT)
 _media_path.mkdir(parents=True, exist_ok=True)

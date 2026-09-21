@@ -9,17 +9,23 @@ from app.database.models import Sensor, SensorReading
 from app.sensors.providers import (
     APIProvider,
     BaseSensorProvider,
+    HybridProvider,
     MQTTProvider,
     SimulationProvider,
     WebSocketProvider,
 )
-from app.sensors.services.ingest import get_last_sync, get_readings_count
+from app.sensors.services.ingest import (
+    get_last_sync_or_db,
+    get_readings_count_or_db,
+)
+from app.services import data_quality as dq
 
 _PROVIDERS: dict[str, type[BaseSensorProvider]] = {
     "simulation": SimulationProvider,
     "api": APIProvider,
     "mqtt": MQTTProvider,
     "websocket": WebSocketProvider,
+    "hybrid": HybridProvider,
 }
 
 _active: BaseSensorProvider | None = None
@@ -33,6 +39,19 @@ def get_sensor_provider() -> BaseSensorProvider:
     if _active is None or _active.mode != mode:
         _active = _PROVIDERS[mode]()
     return _active
+
+
+def effective_status(sensor: Sensor, now=None) -> str:
+    """
+    Statut effectif d'un capteur — 'online' uniquement si last_seen est récent
+    (heartbeat). Un capteur muet depuis SENSOR_HEARTBEAT_OFFLINE_SEC = offline.
+    """
+    if sensor.status == "maintenance":
+        return "maintenance"
+    age = dq.age_seconds(sensor.last_seen, now)
+    if age is None or age > settings.SENSOR_HEARTBEAT_OFFLINE_SEC:
+        return "offline"
+    return sensor.status or "online"
 
 
 class SensorDataProvider:
@@ -68,22 +87,21 @@ class SensorDataProvider:
         return self._provider.ingest(db, source="api", **kwargs)
 
     def get_dashboard(self, db: Session) -> dict[str, Any]:
-        total = db.query(Sensor).count()
-        since = get_last_sync()
-        active = (
-            db.query(Sensor)
-            .filter(Sensor.status == "online")
-            .count()
-            if total
-            else 0
+        from app.database.models import SensorReading
+
+        since = get_last_sync_or_db(db)
+        sensors = db.query(Sensor).all()
+        active = sum(
+            1 for s in sensors if effective_status(s) == "online"
         )
+        total = len(sensors)
         readings_db = db.query(func.count(SensorReading.id)).scalar() or 0
         info = self.get_mode_info()
         return {
             **info,
             "active_sensors": active,
             "total_sensors": total,
-            "readings_received": max(get_readings_count(), readings_db),
+            "readings_received": max(get_readings_count_or_db(db), readings_db),
             "last_sync": since,
         }
 

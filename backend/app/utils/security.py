@@ -84,3 +84,26 @@ def get_optional_user(
         return get_current_user(creds, db)
     except HTTPException:
         return None
+
+
+# ── RBAC minimal ─────────────────────────────────────────────────────────────
+# Hiérarchie : student (0) < staff (1) < admin (2)
+ROLE_ORDER = {"student": 0, "staff": 1, "admin": 2}
+
+
+def role_at_least(user: User, minimum: str) -> bool:
+    return ROLE_ORDER.get(user.role, 0) >= ROLE_ORDER.get(minimum, 0)
+
+
+def require_role(minimum: str = "student"):
+    """Dépendance FastAPI — exige un rôle au moins égal à `minimum`."""
+
+    def dependency(user: User = Depends(get_current_user)) -> User:
+        if not role_at_least(user, minimum):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Permissions insuffisantes pour cette action",
+            )
+        return user
+
+    return dependency

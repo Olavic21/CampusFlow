@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -16,4 +16,4 @@ class SimulationProvider(BaseSensorProvider):
         return "Mode Simulation"
 
     def get_latest_occupancy(self, db: Session) -> list[dict[str, Any]]:
-        return get_latest_readings_from_db(db, source_filter="simulation")
+        return get_latest_readings_from_db(db)

@@ -1,0 +1,6 @@
+# ── Dépendances de développement / test ──────────────────────────────────────
+# Installation : pip install -r requirements-dev.txt
+# Ces paquets ne sont pas nécessaires en production.
+fakeredis>=2.26.0,<3
+httpx==0.27.2
+pytest==9.0.3

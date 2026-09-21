@@ -10,6 +10,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useSensorData } from '../context/SensorDataContext';
+import { useAuth } from '../context/AuthContext';
 import { fetchSensors, injectTestReading } from '../services/sensorApi';
 import { SkeletonList } from '../components/ui/Skeleton';
 import { buildIoTCampusCatalog, summarizeIoTCampus } from '../utils/iotCampusCatalog';
@@ -50,6 +51,9 @@ function congestionBadge(taux) {
 
 export default function IoTSupervisionPage({ onToast }) {
   const { sensorMode, sensorDashboard, refreshMeta, buildings, occupancy } = useSensorData();
+  const { user } = useAuth();
+  // L'injection est réservée staff/admin côté API (P0-1) — on masque le bouton sinon
+  const canInject = user?.role === 'staff' || user?.role === 'admin';
   const [apiSensors, setApiSensors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -202,10 +206,12 @@ export default function IoTSupervisionPage({ onToast }) {
             <RefreshCw size={14} />
             Actualiser
           </button>
-          <button type="button" onClick={handleTestInject} className="cf-btn-primary text-sm flex items-center gap-2">
-            <Activity size={14} />
-            Injecter lecture test
-          </button>
+          {canInject && (
+            <button type="button" onClick={handleTestInject} className="cf-btn-primary text-sm flex items-center gap-2">
+              <Activity size={14} />
+              Injecter lecture test
+            </button>
+          )}
         </div>
 
         <section className="cf-menu-card overflow-hidden">

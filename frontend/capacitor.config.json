@@ -1,6 +1,6 @@
 {
   "appId": "com.supptic.campusflow",
-  "appName": "CampusFlow Lite",
+  "appName": "CampusFlow",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

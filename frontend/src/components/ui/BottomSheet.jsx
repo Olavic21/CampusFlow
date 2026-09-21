@@ -1,6 +1,7 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence, useDragControls, useMotionValue, animate } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 const SNAP_POINTS = [0.25, 0.5, 0.9];
 
@@ -20,7 +21,8 @@ function BottomSheet({
   showHandle = true,
   className = '',
 }) {
-  const sheetRef = useRef(null);
+  // A11y : piège de focus + Escape + restauration du focus (audit P1)
+  const sheetRef = useModalA11y({ open, onClose });
   const dragControls = useDragControls();
   const y = useMotionValue(0);
   const [vh, setVh] = useState(

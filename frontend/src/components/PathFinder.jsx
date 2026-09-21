@@ -1,6 +1,6 @@
 import { memo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Route, Navigation, AlertTriangle, GitCompare, Star } from 'lucide-react';
+import { Route, Navigation, AlertTriangle, GitCompare, Star, Zap, ShieldCheck } from 'lucide-react';
 import NavigationGuide from './navigation/NavigationGuide';
 import RouteBuildingPicker from './routes/RouteBuildingPicker';
 
@@ -15,6 +15,8 @@ function PathFinder({
   routes = [],
   routeMode = 'single',
   setRouteMode,
+  profile = 'calm',
+  onProfileChange,
   activeRouteId,
   setActiveRouteId,
   computePath,
@@ -93,7 +95,9 @@ function PathFinder({
           <Route size={18} className="text-[#2563EB]" strokeWidth={2} />
           Itinéraire piéton
         </h2>
-        <p className="text-[11px] text-slate-500 mt-0.5">Évite les zones saturées</p>
+        <p className="text-[11px] text-slate-500 mt-0.5">
+          {profile === 'calm' ? 'Profil : évite l’affluence' : 'Profil : le plus rapide'}
+        </p>
       </div>
 
       <div className="p-4 space-y-3 overflow-y-auto flex-1 sidebar-scroll">
@@ -118,6 +122,32 @@ function PathFinder({
               occupancy={occupancy}
               onChange={handleEndChange}
             />
+
+            <div className="cf-stat-chip p-3 space-y-2">
+              <p className="cf-menu-label">Profil d&apos;itinéraire</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onProfileChange?.('calm')}
+                  aria-pressed={profile === 'calm'}
+                  className={`flex-1 text-xs py-2 rounded-xl font-medium transition-all duration-[250ms] flex items-center justify-center gap-1
+                    ${profile === 'calm' ? 'bg-[#2563EB] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
+                >
+                  <ShieldCheck size={12} strokeWidth={2} />
+                  Éviter l&apos;affluence
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onProfileChange?.('fast')}
+                  aria-pressed={profile === 'fast'}
+                  className={`flex-1 text-xs py-2 rounded-xl font-medium transition-all duration-[250ms] flex items-center justify-center gap-1
+                    ${profile === 'fast' ? 'bg-[#2563EB] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
+                >
+                  <Zap size={12} strokeWidth={2} />
+                  Le plus rapide
+                </button>
+              </div>
+            </div>
 
             <div className="cf-stat-chip p-3 space-y-2">
               <p className="cf-menu-label">Mode affichage</p>
@@ -153,8 +183,8 @@ function PathFinder({
               {pathLoading ? 'Calcul en cours…' : 'Calculer le chemin'}
             </button>
 
-            {routeMode === 'compare' && routes.length > 0 && (
-              <ul className="space-y-1.5">
+            {routes.length > 0 && (
+              <ul className="space-y-1.5" aria-label="Options d'itinéraire">
                 {routes.map((r) => (
                   <li key={r.id}>
                     <button
@@ -164,7 +194,14 @@ function PathFinder({
                         ${activeRouteId === r.id ? 'ring-2 ring-[#2563EB]/50 bg-slate-50 dark:bg-slate-800' : ''}`}
                     >
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: r.color }} />
-                      <span className="truncate">{r.label}</span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block truncate font-semibold">{r.tag ?? r.label}</span>
+                        {r.result && (
+                          <span className="block text-[10px] text-slate-400">
+                            {r.result.totalDistance} m · ~{r.result.estimatedMinutes} min
+                          </span>
+                        )}
+                      </span>
                     </button>
                   </li>
                 ))}

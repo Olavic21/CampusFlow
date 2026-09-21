@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users,
@@ -17,6 +17,7 @@ import { useSensorData } from '../context/SensorDataContext';
 import CampusLayoutEngine from '../engine/CampusLayoutEngine';
 import { safeOccupancy } from '../utils/buildingSafety';
 import { summarizeIoTCampus, buildIoTCampusCatalog } from '../utils/iotCampusCatalog';
+import { fetchDashboardStats } from '../services/api';
 
 function KpiCard({ icon: Icon, label, value, sub, accent = 'blue' }) {
   const accents = {
@@ -51,6 +52,23 @@ function formatSync(iso) {
 function StatsDashboard({ globalStats, occupancy, buildings }) {
   const { sensorMode, sensorDashboard } = useSensorData();
   const dash = sensorDashboard || {};
+  // KPIs serveur agrégés (Phase 3) — silencieux hors ligne
+  const [serverStats, setServerStats] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchDashboardStats('week');
+        if (!cancelled && data) setServerStats(data);
+      } catch {
+        /* hors ligne — les statistiques locales suffisent */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const campusBuildings = useMemo(
     () => CampusLayoutEngine.getGpsBuildings(occupancy, buildings),
@@ -65,6 +83,7 @@ function StatsDashboard({ globalStats, occupancy, buildings }) {
   const topBusy = useMemo(
     () =>
       [...campusBuildings]
+        .filter((b) => !b.simulated) // jumeaux "Démo" exclus des classements (P0-5)
         .map((b) => {
           const occ = safeOccupancy(occupancy, b);
           return { b, taux: occ.taux, count: occ.count };
@@ -77,6 +96,7 @@ function StatsDashboard({ globalStats, occupancy, buildings }) {
   const byCategory = useMemo(() => {
     const map = {};
     for (const b of campusBuildings) {
+      if (b.simulated) continue; // jumeaux "Démo" exclus des agrégats
       const cat = b.categoryLabel || b.category || 'Autre';
       const occ = safeOccupancy(occupancy, b);
       if (!map[cat]) map[cat] = { count: 0, total: 0, tauxSum: 0 };
@@ -221,6 +241,10 @@ function StatsDashboard({ globalStats, occupancy, buildings }) {
           <span className="text-amber-600 font-medium">{globalStats.modere} modérées</span>
           <span className="text-red-600 font-medium">{globalStats.sature} saturées</span>
         </div>
+        <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+          Couverture capteurs : {globalStats.knownBuildings ?? 0}/{globalStats.totalRooms ?? 0}{' '}
+          bâtiments — les jumeaux sans capteur sont affichés « Démo »
+        </p>
       </section>
 
       <section className="cf-glass rounded-[20px] p-4 mb-6">
@@ -253,6 +277,48 @@ function StatsDashboard({ globalStats, occupancy, buildings }) {
           })}
         </div>
       </section>
+
+      {serverStats && (serverStats.top_locations?.length || serverStats.peak_hours?.length) ? (
+        <section className="cf-glass rounded-[20px] p-4 mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp size={16} className="text-[#2563EB]" />
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              Tendances 7 jours
+              <span className="ml-2 text-[10px] font-semibold text-slate-400">(serveur)</span>
+            </h2>
+          </div>
+          {serverStats.top_locations?.length > 0 && (
+            <div className="mb-3">
+              <p className="text-[11px] text-slate-400 mb-1.5">Salles les plus chargées</p>
+              <ul className="space-y-1 text-xs">
+                {serverStats.top_locations.slice(0, 5).map((t) => (
+                  <li key={t.id} className="flex justify-between cf-stat-chip px-3 py-1.5">
+                    <span className="truncate">{t.name}</span>
+                    <span className="font-bold text-slate-600 dark:text-slate-300">
+                      {Math.round((t.avg_congestion ?? 0) * 100)}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {serverStats.peak_hours?.length > 0 && (
+            <div>
+              <p className="text-[11px] text-slate-400 mb-1.5">Heures de pointe</p>
+              <div className="flex flex-wrap gap-1.5">
+                {serverStats.peak_hours.map((p) => (
+                  <span
+                    key={p.hour}
+                    className="cf-stat-chip px-2.5 py-1 text-[11px] font-semibold"
+                  >
+                    {String(p.hour).padStart(2, '0')}h · {p.avg_students}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      ) : null}
 
       <section>
         <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3">

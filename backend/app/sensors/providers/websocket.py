@@ -22,3 +22,25 @@ class WebSocketProvider(BaseSensorProvider):
 
     def get_latest_occupancy(self, db: Session) -> list[dict[str, Any]]:
         return get_latest_readings_from_db(db)
+
+
+class HybridProvider(BaseSensorProvider):
+    """Mode hybride — simulateur actif pour les bâtiments sans capteur réel.
+
+    Les lectures réelles (api/mqtt) coexistent avec la simulation :
+    la plus récente par bâtiment gagne (lecture unifiée).
+    """
+
+    @property
+    def mode(self) -> str:
+        return "hybrid"
+
+    @property
+    def is_real(self) -> bool:
+        return True
+
+    def get_label(self) -> str:
+        return "Mode Hybride (réel + simulation)"
+
+    def get_latest_occupancy(self, db: Session) -> list[dict[str, Any]]:
+        return get_latest_readings_from_db(db)

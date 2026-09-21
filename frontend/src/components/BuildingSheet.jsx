@@ -1,9 +1,11 @@
-import { memo, useState, Component } from 'react';
+import { memo, useState, useEffect, Component } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { X, Navigation, BarChart3, MapPin, AlertCircle, Star } from 'lucide-react';
 import capteursData from '../data/capteurs.json';
-import { getCongestionLevel } from '../utils/congestionColor';
+import { fetchFluxHistory, fetchForecast } from '../services/api';
+import { useSensorData } from '../context/SensorDataContext';
+import { getCongestionLevel, NODATA_LEVEL } from '../utils/congestionColor';
 import {
   getBuildingLucideIcon,
   getTypeLabel,
@@ -76,6 +78,65 @@ function SheetContent({
 }) {
   const [imgError, setImgError] = useState(false);
 
+  // ── Qualification des données (P0-4) + sparkline live ────────────────────
+  const geoKey = building?.geoId ?? building?.id;
+  const occRaw = (geoKey != null && occupancy[geoKey]) || {};
+  const isUnknownOcc = !!occRaw.unknown;
+  const isDemoOcc = !!(occRaw.simulated || building?.simulated);
+  const isStaleOcc = !!occRaw.stale && !occRaw.unknown;
+
+  const [spark, setSpark] = useState({ data: null, source: 'local' });
+
+  // Incidents actifs sur ce bâtiment (Phase 2)
+  const { incidents = [] } = useSensorData();
+  const buildingIncident = incidents.find(
+    (i) => i.location_id === (building?.geoId ?? building?.id),
+  );
+
+  // Prévision 24 h (Phase 3) — profil horaire historique, qualifié PREDICTED
+  const [forecast, setForecast] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    setForecast(null);
+    (async () => {
+      try {
+        const resp = await fetchForecast(geoKey);
+        if (!cancelled && resp?.points) setForecast(resp);
+      } catch {
+        /* hors ligne ou pas assez d'historique — section masquée */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [geoKey]);
+
+  // A11y dialogue : piège de focus + Escape (audit P1)
+  const modalRef = useModalA11y({ open: true, onClose });
+
+  useEffect(() => {
+    let cancelled = false;
+    setSpark({ data: null, source: 'local' });
+    (async () => {
+      try {
+        const resp = await fetchFluxHistory(geoKey, 'hour');
+        if (cancelled) return;
+        const pts = (resp?.data ?? [])
+          .slice(-8)
+          .map((d) => ({
+            hour: `${String(new Date(d.timestamp).getHours()).padStart(2, '0')}h`,
+            value: d.avg_students,
+          }));
+        if (pts.length) setSpark({ data: pts, source: 'live' });
+      } catch {
+        /* hors ligne → repli sur le profil indicatif local */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [geoKey]);
+
   if (!isValidBuilding(building)) {
     return (
       <>
@@ -104,12 +165,14 @@ function SheetContent({
   }
 
   const occ = safeOccupancy(occupancy, building);
-  const count = occ.count;
+  const count = isUnknownOcc ? 0 : occ.count;
   const capacite = building.capacite ?? occ.capacite ?? 0;
-  const taux = capacite > 0 ? count / capacite : occ.taux ?? 0;
-  const { color, label } = getCongestionLevel(taux);
+  const taux = isUnknownOcc ? 0 : capacite > 0 ? count / capacite : occ.taux ?? 0;
+  const { color, label } = isUnknownOcc
+    ? { color: NODATA_LEVEL.color, label: 'Donnée indisponible' }
+    : getCongestionLevel(taux);
   const pct = Math.round(taux * 100);
-  const sparkline = getSparklineData(building.geoId ?? building.id, currentHour);
+  const sparkline = spark.data ?? getSparklineData(geoKey, currentHour);
   const Icon = getBuildingLucideIcon(building);
   const imageUrl = getBuildingImageUrl(building);
 
@@ -126,6 +189,7 @@ function SheetContent({
       />
       <motion.aside
         key="sheet"
+        ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="building-sheet-title"
@@ -211,15 +275,40 @@ function SheetContent({
               />
             </div>
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              {count} / {capacite} étudiants
-              <span className="text-slate-500 font-normal ml-2">({pct}%)</span>
+              {isUnknownOcc ? 'Aucune donnée capteur' : `${count} / ${capacite} étudiants`}
+              {!isUnknownOcc && (
+                <span className="text-slate-500 font-normal ml-2">({pct}%)</span>
+              )}
             </p>
-            <span
-              className="inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: `${color}22`, color }}
-            >
-              {label}
-            </span>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              <span
+                className="inline-block text-xs font-medium px-2.5 py-1 rounded-full"
+                style={{ backgroundColor: `${color}22`, color }}
+              >
+                {label}
+              </span>
+              {isDemoOcc && (
+                <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300">
+                  Démo — pas de capteur
+                </span>
+              )}
+              {isStaleOcc && (
+                <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
+                  Donnée ancienne
+                </span>
+              )}
+              {buildingIncident && (
+                <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300">
+                  ⚠️{' '}
+                  {buildingIncident.type === 'works'
+                    ? 'Travaux'
+                    : buildingIncident.type === 'event'
+                      ? 'Événement'
+                      : 'Fermeture'}
+                  {buildingIncident.message ? ` — ${buildingIncident.message}` : ''}
+                </span>
+              )}
+            </div>
           </section>
 
           <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -270,11 +359,56 @@ function SheetContent({
           )}
 
           <section>
-            <p className="cf-menu-label mb-2">Fréquentation (6 h)</p>
+            <p className="cf-menu-label mb-2 flex items-center justify-between">
+              <span>Fréquentation (7 h)</span>
+              <span
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                  spark.source === 'live'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                }`}
+              >
+                {spark.source === 'live' ? 'Capteur (temps réel)' : 'Profil indicatif'}
+              </span>
+            </p>
             <div className="h-28 cf-stat-chip p-2">
               <SafeSparkline data={sparkline} color={color} />
             </div>
           </section>
+
+          {forecast && (
+            <section>
+              <p className="cf-menu-label mb-2 flex items-center justify-between">
+                <span>Prévision 24 h</span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
+                  PREDICTED · {Math.round((forecast.confidence ?? 0) * 100)}%
+                </span>
+              </p>
+              <div className="h-28 cf-stat-chip p-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={forecast.points.map((p) => ({
+                      h: `${String(p.hour).padStart(2, '0')}h`,
+                      v: p.predicted ?? 0,
+                    }))}
+                  >
+                    <Area
+                      type="monotone"
+                      dataKey="v"
+                      stroke="#6366f1"
+                      fill="#6366f1"
+                      fillOpacity={0.15}
+                      strokeWidth={2}
+                      isAnimationActive={false}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Profil horaire historique (90 j) — prévision déterministe, pas une mesure.
+              </p>
+            </section>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-2 pt-2 pb-safe">
             <button

@@ -113,6 +113,21 @@ export async function fetchDashboardStats(period = 'week') {
   return request(`/dashboard/stats?period=${period}`);
 }
 
+/** Incidents actifs — les bâtiments concernés sont évités en routage (Phase 2). */
+export async function fetchIncidents(activeOnly = true) {
+  return request(`/incidents${activeOnly ? '?active_only=true' : ''}`);
+}
+
+/** Bâtiments libres MAINTENANT (Phase 3 — « salle libre »). */
+export async function fetchFreeLocations(limit = 8) {
+  return request(`/locations/free?limit=${limit}`);
+}
+
+/** Prévision 24 h — profil horaire historique, qualifié PREDICTED (Phase 3). */
+export async function fetchForecast(locationId) {
+  return request(`/predict/forecast/${locationId}`);
+}
+
 export async function isApiAvailable() {
   if (Date.now() - healthCache.at < HEALTH_CACHE_MS && healthCache.ok !== null) {
     return healthCache.ok;

@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
+import BrandLogo from './brand/BrandLogo';
 
 function MapLoadingOverlay({ visible, label = 'Chargement du campus…' }) {
   if (!visible) return null;
@@ -15,7 +16,8 @@ function MapLoadingOverlay({ visible, label = 'Chargement du campus…' }) {
       aria-busy="true"
       aria-label={label}
     >
-      <div className="flex flex-col items-center gap-4 bg-white/95 rounded-2xl px-8 py-6 shadow-xl">
+      <div className="flex flex-col items-center gap-3 bg-white/95 dark:bg-slate-900/95 rounded-2xl px-8 py-6 shadow-xl">
+        <BrandLogo variant="icon" className="!h-11 !w-11" />
         <div className="flex gap-1.5" aria-hidden="true">
           {[0, 1, 2].map((i) => (
             <span
@@ -25,7 +27,7 @@ function MapLoadingOverlay({ visible, label = 'Chargement du campus…' }) {
             />
           ))}
         </div>
-        <p className="text-sm font-medium text-slate-700">{label}</p>
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{label}</p>
       </div>
     </motion.div>
   );

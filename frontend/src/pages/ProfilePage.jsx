@@ -288,6 +288,15 @@ export default function ProfilePage({
             </button>
             <button
               type="button"
+              onClick={() => onNavigate('iot')}
+              className="w-full flex items-center gap-3 px-3 py-3.5 text-sm font-medium text-slate-800 dark:text-white active:bg-slate-50 dark:active:bg-slate-800/50 rounded-xl"
+            >
+              <Cpu size={18} className="text-slate-500" />
+              <span className="flex-1 text-left">Supervision IoT</span>
+              <ChevronRight size={16} className="text-slate-400" />
+            </button>
+            <button
+              type="button"
               onClick={() => onNavigate('settings')}
               className="w-full flex items-center gap-3 px-3 py-3.5 text-sm font-medium text-slate-800 dark:text-white active:bg-slate-50 dark:active:bg-slate-800/50 rounded-xl"
             >

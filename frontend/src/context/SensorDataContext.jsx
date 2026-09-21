@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { getCongestionLevel } from '../utils/congestionColor';
+import { getCongestionLevel, TWIN_DEMO, NODATA_LEVEL, getTwinDemoOccupancy } from '../utils/congestionColor';
 import CampusLayoutEngine from '../engine/CampusLayoutEngine';
 import {
   SENSOR_MODE,
@@ -16,58 +16,86 @@ import {
   createWebSocketProvider,
 } from '../services/sensorProviders';
 import { fetchSensorMode, fetchSensorDashboard } from '../services/sensorApi';
+import { fetchIncidents } from '../services/api';
 
 const SensorDataContext = createContext(null);
+
+/** Au-delà de ce délai sans mise à jour en ligne, les données sont "anciennes". */
+const STALE_MS = 90000;
 
 function enrichOccupancy(raw, buildings) {
   const enriched = {};
   for (const b of buildings) {
-    const o = raw[b.id] || { count: 0, taux: 0, capacite: b.capacite };
-    const taux = o.taux ?? 0;
-    const { color, label, level } = getCongestionLevel(taux);
-    enriched[b.id] = { ...o, color, label, level };
-  }
-  for (const twin of CampusLayoutEngine.getBuildings()) {
-    if (twin.geoId != null || enriched[twin.id]) continue;
-    const hash = twin.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-    const taux = ((hash % 70) + 10) / 100;
-    const count = Math.round((twin.capacite || 20) * taux);
-    const { color, label, level } = getCongestionLevel(taux);
-    enriched[twin.id] = {
-      count,
-      taux,
-      capacite: twin.capacite,
+    const o = raw[b.id];
+    if (!o || o.unknown || o.count == null) {
+      // Aucune donnée récente — état neutre explicite, jamais un faux zéro (P0-4)
+      enriched[b.id] = {
+        unknown: true,
+        count: null,
+        taux: null,
+        capacite: b.capacite,
+        color: NODATA_LEVEL.color,
+        label: NODATA_LEVEL.label,
+        level: 'nodata',
+      };
+      continue;
+    }
+    const { color, label, level } = getCongestionLevel(o.taux ?? 0);
+    enriched[b.id] = {
+      ...o,
       color,
       label,
       level,
-      simulated: true,
+      simulated: !!(o.simulated || o.source === 'simulation'),
+    };
+  }
+  // Jumeaux numériques sans capteur → occupation indicative "Démo" (P0-5)
+  for (const twin of CampusLayoutEngine.getBuildings()) {
+    if (twin.geoId != null || enriched[twin.id]) continue;
+    const demo = getTwinDemoOccupancy(twin);
+    enriched[twin.id] = {
+      ...demo,
+      color: TWIN_DEMO.color,
+      label: TWIN_DEMO.label,
+      level: TWIN_DEMO.level,
     };
   }
   return enriched;
 }
 
-export function SensorDataProvider({ children, simulatedTime = null }) {
+export function SensorDataProvider({ children, simulatedTime = null, demo = false }) {
   const [buildings, setBuildings] = useState([]);
   const [occupancyRaw, setOccupancyRaw] = useState({});
   const [offline, setOffline] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [lastDataAt, setLastDataAt] = useState(null);
+  const [nowTick, setNowTick] = useState(() => Date.now());
   const [sensorMode, setSensorMode] = useState({
     mode: SENSOR_MODE,
     is_real: false,
     label: 'Mode Simulation',
   });
   const [sensorDashboard, setSensorDashboard] = useState(null);
+  const [incidents, setIncidents] = useState([]);
   const buildingsRef = useRef([]);
   const wsCleanupRef = useRef(null);
 
+  // Horloge de fraîcheur — re-rendu léger toutes les 15 s pour recalculer `stale`
+  useEffect(() => {
+    const t = setInterval(() => setNowTick(Date.now()), 15000);
+    return () => clearInterval(t);
+  }, []);
+
   const refreshMeta = useCallback(async () => {
     try {
-      const [mode, dash] = await Promise.all([
+      const [mode, dash, incs] = await Promise.all([
         fetchSensorMode(),
         fetchSensorDashboard(),
+        fetchIncidents(true).catch(() => null),
       ]);
       setSensorMode(mode);
       setSensorDashboard(dash);
+      if (Array.isArray(incs)) setIncidents(incs);
     } catch {
       setSensorMode({
         mode: SENSOR_MODE,
@@ -81,12 +109,17 @@ export function SensorDataProvider({ children, simulatedTime = null }) {
     async (bldgs) => {
       const list = bldgs || buildingsRef.current;
       if (!list.length) return;
-      const result = await fetchOccupancy(SENSOR_MODE, list, simulatedTime);
+      const result = await fetchOccupancy(
+        demo ? 'simulation' : SENSOR_MODE,
+        list,
+        demo ? simulatedTime : null,
+      );
       setOccupancyRaw(result.raw);
       setOffline(result.offline ?? false);
+      setLastDataAt(Date.now());
       setLoading(false);
     },
-    [simulatedTime],
+    [simulatedTime, demo],
   );
 
   useEffect(() => {
@@ -120,14 +153,15 @@ export function SensorDataProvider({ children, simulatedTime = null }) {
   }, [fetchLive, refreshMeta]);
 
   useEffect(() => {
-    if (simulatedTime) {
+    if (demo) {
+      // Mode démo — pas de polling réseau ni de WebSocket
       fetchLive(buildingsRef.current);
       return undefined;
     }
 
     fetchLive(buildingsRef.current);
     const interval = setInterval(() => fetchLive(buildingsRef.current), 30000);
-    const metaInterval = setInterval(refreshMeta, 15000);
+    const metaInterval = setInterval(refreshMeta, 60000);
 
     // WebSocket temps réel quand le backend est joignable (simulateur ou capteurs réels).
     const useWs =
@@ -141,6 +175,7 @@ export function SensorDataProvider({ children, simulatedTime = null }) {
         buildingsRef.current,
         (raw) => {
           setOccupancyRaw((prev) => ({ ...prev, ...raw }));
+          setLastDataAt(Date.now());
           setOffline(false);
         },
         () => {},
@@ -153,7 +188,7 @@ export function SensorDataProvider({ children, simulatedTime = null }) {
       wsCleanupRef.current?.();
       wsCleanupRef.current = null;
     };
-  }, [simulatedTime, fetchLive, refreshMeta, buildings.length, offline]);
+  }, [demo, simulatedTime, fetchLive, refreshMeta, buildings.length, offline]);
 
   const occupancy = useMemo(
     () => enrichOccupancy(occupancyRaw, buildings),
@@ -169,10 +204,14 @@ export function SensorDataProvider({ children, simulatedTime = null }) {
     let disponible = 0;
     let maxBuilding = null;
     let minBuilding = null;
+    let knownBuildings = 0;
 
     for (const b of campusBuildings) {
       const occKey = b.geoId ?? b.id;
       const o = occupancy[occKey] || b.occupancy || { count: b.count ?? 0, taux: b.taux ?? 0 };
+      // Honnêteté des données : jumeaux "Démo" et bâtiments sans lecture exclus
+      if (o.simulated || o.unknown || o.count == null) continue;
+      knownBuildings += 1;
       total += o.count ?? 0;
       totalCap += b.capacite ?? 0;
       const taux = o.taux ?? 0;
@@ -193,8 +232,14 @@ export function SensorDataProvider({ children, simulatedTime = null }) {
       minBuilding,
       availableRooms: disponible,
       totalRooms: campusBuildings.length,
+      // Couverture de données réelles affichée (0..1) — transparence P0-4
+      knownBuildings,
+      dataCoverage: campusBuildings.length ? knownBuildings / campusBuildings.length : 0,
     };
   }, [buildings, occupancy]);
+
+  const stale =
+    !demo && !offline && lastDataAt != null && nowTick - lastDataAt > STALE_MS;
 
   const value = useMemo(
     () => ({
@@ -208,6 +253,11 @@ export function SensorDataProvider({ children, simulatedTime = null }) {
       sensorDashboard,
       refreshMeta,
       source: SENSOR_MODE,
+      demo,
+      stale,
+      lastDataAt,
+      incidents,
+      blockedLocationIds: (incidents || []).map((i) => i.location_id),
     }),
     [
       buildings,
@@ -219,6 +269,9 @@ export function SensorDataProvider({ children, simulatedTime = null }) {
       sensorMode,
       sensorDashboard,
       refreshMeta,
+      demo,
+      stale,
+      lastDataAt,
     ],
   );
 

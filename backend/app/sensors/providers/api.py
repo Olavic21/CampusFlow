@@ -21,4 +21,4 @@ class APIProvider(BaseSensorProvider):
         return "Données API"
 
     def get_latest_occupancy(self, db: Session) -> list[dict[str, Any]]:
-        return get_latest_readings_from_db(db, source_filter="api")
+        return get_latest_readings_from_db(db)

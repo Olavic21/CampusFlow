@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, SlidersHorizontal, Play, Pause, Map, MapPin } from 'lucide-react';
+import { Search, SlidersHorizontal, Play, Pause, Map, MapPin, FlaskConical, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import CampusLayoutEngine from '../engine/CampusLayoutEngine';
 
@@ -10,6 +10,9 @@ export default function ControlPanel({
   filters,
   setFilters,
   simulation,
+  demoMode = false,
+  onEnterDemo,
+  onExitDemo,
   onSearchSelect,
   onExport,
   darkMode,
@@ -202,25 +205,53 @@ export default function ControlPanel({
           </AnimatePresence>
         </div>
 
-        {/* Simulation */}
+        {/* Mode démo — time machine 7h–19h sur courbes historiques (explicite) */}
         <div className="flex items-center gap-2 cf-glass rounded-[20px] px-3 py-2 shadow-md border border-white/40 dark:text-white">
-          <span className="text-sm whitespace-nowrap font-medium tabular-nums">{simulation.formattedTime}</span>
-          <input
-            type="range"
-            min={simulation.sliderMin}
-            max={simulation.sliderMax}
-            value={simulation.timeToSlider}
-            onChange={(e) => simulation.setFromSlider(Number(e.target.value))}
-            className={`accent-brand ${compact ? 'w-16' : 'w-24'}`}
-          />
-          <button
-            type="button"
-            onClick={simulation.togglePlay}
-            className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-            aria-label={simulation.playing ? 'Pause' : 'Lecture'}
-          >
-            {simulation.playing ? <Pause size={18} /> : <Play size={18} />}
-          </button>
+          {demoMode ? (
+            <>
+              <FlaskConical size={14} className="text-violet-500 shrink-0" aria-hidden="true" />
+              <span className="text-sm whitespace-nowrap font-medium tabular-nums">
+                {simulation.formattedTime}
+              </span>
+              <input
+                type="range"
+                min={simulation.sliderMin}
+                max={simulation.sliderMax}
+                value={simulation.timeToSlider}
+                onChange={(e) => simulation.setFromSlider(Number(e.target.value))}
+                aria-label="Heure simulée (mode démo)"
+                className={`accent-brand ${compact ? 'w-16' : 'w-24'}`}
+              />
+              <button
+                type="button"
+                onClick={simulation.togglePlay}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                aria-label={simulation.playing ? 'Pause de la simulation' : 'Lecture de la simulation'}
+              >
+                {simulation.playing ? <Pause size={18} /> : <Play size={18} />}
+              </button>
+              <button
+                type="button"
+                onClick={onExitDemo}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition text-violet-500"
+                aria-label="Quitter le mode démo"
+                title="Revenir aux données temps réel"
+              >
+                <X size={16} />
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onEnterDemo}
+              className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-300 px-1 focus:outline-none focus:ring-2 focus:ring-violet-400 rounded-lg"
+              aria-label="Activer le mode démo"
+              title="Explorer la fréquentation type d'une journée (7h–19h)"
+            >
+              <FlaskConical size={14} aria-hidden="true" />
+              {!compact && 'Mode démo'}
+            </button>
+          )}
         </div>
 
         {!compact && (

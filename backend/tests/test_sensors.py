@@ -50,7 +50,7 @@ def test_sensor_dashboard(client, db_session):
     assert "active_sensors" in data
 
 
-def test_inject_test_data(client, db_session):
+def test_inject_test_data(client, db_session, admin_headers):
     loc = _seed_location(db_session)
     ensure_sensors_seeded(db_session)
     sensor = db_session.query(Sensor).filter(Sensor.location_id == loc.id).first()
@@ -63,6 +63,7 @@ def test_inject_test_data(client, db_session):
             "sensor_id": sensor.id,
             "confidence_score": 0.95,
         },
+        headers=admin_headers,
     )
     assert response.status_code == 200
     body = response.json()
@@ -73,3 +74,14 @@ def test_inject_test_data(client, db_session):
     dash = client.get("/sensors/status").json()
     assert dash["readings_received"] >= 1
     assert dash["last_sync"] is not None
+
+
+def test_inject_test_data_unauthenticated_401(client, db_session):
+    """P0-1 : l'injection sans token est rejetée (anti-empoisonnement)."""
+    loc = _seed_location(db_session)
+    ensure_sensors_seeded(db_session)
+    response = client.post(
+        "/sensors/test-data",
+        json={"building_id": loc.id, "occupancy": 17},
+    )
+    assert response.status_code == 401

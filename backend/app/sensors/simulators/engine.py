@@ -6,7 +6,7 @@ import asyncio
 import json
 import logging
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -63,7 +63,7 @@ class SensorSimulator:
         return max(0, min(loc.capacite, count))
 
     def generate_tick(self, db: Session) -> list[dict]:
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
         payloads = []
         for loc in db.query(Location).order_by(Location.id).all():
             occ = self._occupancy_for(loc, now)

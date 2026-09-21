@@ -32,6 +32,13 @@ class Settings:
     JWT_REFRESH_DAYS: int = int(os.getenv("JWT_REFRESH_DAYS", "30"))
     BCRYPT_ROUNDS: int = int(os.getenv("BCRYPT_ROUNDS", "10"))
 
+    # Modèle ML — toujours résolu par rapport au dossier backend/ (pas au CWD)
+    _ml_env = os.getenv("ML_MODEL_PATH", str(_PROJECT_ROOT / "ml" / "model.pkl"))
+    _ml_path = Path(_ml_env)
+    if not _ml_path.is_absolute():
+        _ml_path = (_BACKEND_DIR / _ml_path).resolve()
+    ML_MODEL_PATH: str = str(_ml_path)
+
     # Médias (équivalent Django MEDIA_ROOT / MEDIA_URL)
     MEDIA_ROOT: Path = Path(
         os.getenv("MEDIA_ROOT", str(_PROJECT_ROOT / "media"))
@@ -43,7 +50,7 @@ class Settings:
     AVATAR_TARGET_MAX_BYTES: int = 500 * 1024
     PUBLIC_API_BASE: str = os.getenv("PUBLIC_API_BASE", "http://127.0.0.1:8000")
 
-    # IoT / Capteurs — modes : simulation | api | mqtt | websocket
+    # IoT / Capteurs — modes : simulation | api | mqtt | websocket | hybrid
     SENSOR_MODE: str = os.getenv("SENSOR_MODE", "simulation").strip().lower()
     SENSOR_SIM_INTERVAL_SEC: int = int(os.getenv("SENSOR_SIM_INTERVAL_SEC", "10"))
     CAPTEURS_JSON_PATH: Path = Path(
@@ -51,6 +58,13 @@ class Settings:
     ).resolve()
     MQTT_BROKER_URL: str = os.getenv("MQTT_BROKER_URL", "")
     MQTT_TOPIC: str = os.getenv("MQTT_TOPIC", "campusflow/occupancy/#")
+
+    # Qualité des données — une lecture plus vieille que ce seuil est marquée STALE
+    STALE_AFTER_SEC: int = int(os.getenv("STALE_AFTER_SEC", "120"))
+    # Heartbeat capteur — au-delà de ce délai sans lecture, le capteur est "offline"
+    SENSOR_HEARTBEAT_OFFLINE_SEC: int = int(os.getenv("SENSOR_HEARTBEAT_OFFLINE_SEC", "90"))
+    # Rétention des séries temporelles (flux + sensor_readings), en jours
+    RETENTION_DAYS: int = int(os.getenv("RETENTION_DAYS", "90"))
 
 
 settings = Settings()

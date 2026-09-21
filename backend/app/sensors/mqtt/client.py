@@ -4,7 +4,7 @@ Active uniquement si MQTT_BROKER_URL est configuré et paho-mqtt installé.
 """
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.config import settings
 from app.database.session import SessionLocal
@@ -29,17 +29,11 @@ def _on_message(client, userdata, msg):  # noqa: ARG001
                 sensor_id=sensor_id,
                 confidence_score=confidence,
                 source="mqtt",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(tz=timezone.utc),
             )
             db.commit()
-        import asyncio
-
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(occupancy_hub.broadcast(payload))
-        except RuntimeError:
-            pass
+        # Diffusion thread-safe vers la boucle asyncio principale
+        occupancy_hub.broadcast_threadsafe(payload)
     except Exception:
         logger.exception("Message MQTT invalide : %s", msg.payload[:200])
 

@@ -6,7 +6,7 @@ export default function SplashScreen({ visible }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[900] flex flex-col items-center justify-center bg-gradient-to-br from-[#2563EB] to-[#1e40af] pt-safe"
+      className="fixed inset-0 z-[900] flex flex-col items-center justify-center bg-gradient-to-br from-[#0f3e9e] via-[#1f5ed5] to-[#39aef0] pt-safe"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
@@ -19,8 +19,8 @@ export default function SplashScreen({ visible }) {
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="flex flex-col items-center px-8 text-center"
       >
-        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 shadow-2xl mb-6">
-          <BrandLogo variant="splash" dark />
+        <div className="bg-white rounded-3xl p-5 sm:p-7 shadow-2xl mb-6 max-w-[min(88vw,360px)] w-full">
+          <BrandLogo variant="splash" />
         </div>
         <motion.h1
           className="text-2xl font-bold text-white tracking-tight"
@@ -28,7 +28,7 @@ export default function SplashScreen({ visible }) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.15 }}
         >
-          CampusFlow Lite
+          CampusFlow
         </motion.h1>
         <motion.p
           className="text-white/80 text-sm mt-2 font-medium"
@@ -36,7 +36,7 @@ export default function SplashScreen({ visible }) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25 }}
         >
-          Smart Campus Navigation
+          Jumeau numérique du campus intelligent
         </motion.p>
         <div className="flex gap-1.5 mt-10">
           {[0, 1, 2].map((i) => (

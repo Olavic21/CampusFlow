@@ -1,0 +1,46 @@
+# --- Web API ---
+fastapi==0.111.0
+uvicorn==0.48.0
+starlette==0.37.2
+pydantic==2.7.1
+pydantic_core==2.18.2
+annotated-types==0.7.0
+annotated-doc==0.0.4
+typing_extensions==4.12.2
+anyio==4.13.0
+click==8.1.8
+h11==0.16.0
+idna==3.10
+python-multipart==0.0.30
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+email-validator==2.2.0
+bcrypt==4.2.0
+Pillow==11.0.0
+
+# --- Database ---
+SQLAlchemy==2.0.50
+greenlet==3.1.1
+
+# --- Cache ---
+redis==5.2.1
+
+# --- Config / utils ---
+python-dotenv==1.0.1
+icalendar==5.0.12
+
+# --- IoT / MQTT (paho v1 : API compatible avec app/sensors/mqtt/client.py) ---
+paho-mqtt==1.6.1
+
+# --- Data ---
+pandas==2.2.3
+numpy>=2.2.0,<3.0
+
+# --- Machine learning ---
+scikit-learn==1.5.0
+scipy==1.13.0
+joblib==1.4.2
+threadpoolctl==3.5.0
+
+# --- Graph ---
+networkx==3.4.2

@@ -1,0 +1,1001 @@
+id,etudiant_id,texte,sentiment,timestamp
+1,114,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-19 05:49:50
+2,170,J'ai utilisé le laboratoire L21.,neutre,2026-05-22 19:27:07
+3,87,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-03 12:53:35
+4,184,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-15 23:06:46
+5,155,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-08 04:39:39
+6,107,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-01 17:24:29
+7,107,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-05 16:14:00
+8,85,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-23 04:34:01
+9,35,J'ai assisté à mon cours en C17.,neutre,2026-05-23 20:58:16
+10,196,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-19 20:54:07
+11,148,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-15 07:22:25
+12,68,La journée s'est bien passée.,neutre,2026-05-02 12:48:10
+13,55,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-24 22:08:56
+14,7,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-24 20:14:07
+15,163,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-16 20:13:45
+16,39,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-16 18:51:38
+17,20,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-02 03:59:55
+18,53,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-18 20:40:45
+19,30,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-11 19:22:30
+20,134,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-13 06:01:42
+21,191,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-24 03:21:30
+22,189,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-20 08:01:21
+23,67,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-10 20:51:56
+24,25,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-24 00:13:06
+25,20,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-12 14:07:33
+26,116,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-08 17:05:10
+27,7,J'ai révisé mes cours en C5.,neutre,2026-05-07 17:29:16
+28,155,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-06 06:30:48
+29,82,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-20 02:30:18
+30,139,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-13 23:32:50
+31,79,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-17 12:16:49
+32,4,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-12 05:49:56
+33,181,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-15 14:54:51
+34,21,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-13 01:40:10
+35,151,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-08 12:14:19
+36,138,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-22 10:05:51
+37,190,La journée s'est bien passée.,neutre,2026-05-20 03:00:45
+38,124,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-01 10:39:23
+39,105,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-25 17:47:10
+40,50,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-04 10:33:22
+41,68,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-04 22:34:28
+42,76,Journée normale sur le campus.,neutre,2026-05-27 03:55:36
+43,128,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-27 19:24:47
+44,168,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-11 15:39:10
+45,30,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-01 17:24:49
+46,19,Journée normale sur le campus.,neutre,2026-05-20 17:17:08
+47,76,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-02 14:15:21
+48,171,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-01 21:02:56
+49,131,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-21 20:08:20
+50,129,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-19 07:43:40
+51,95,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-25 12:51:30
+52,78,La journée s'est bien passée.,neutre,2026-05-11 17:19:37
+53,51,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-05 20:55:10
+54,139,La journée s'est bien passée.,neutre,2026-05-19 06:34:33
+55,98,J'ai révisé mes cours en C5.,neutre,2026-05-10 21:47:37
+56,80,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-09 22:53:35
+57,92,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-21 03:13:06
+58,67,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-12 08:00:11
+59,38,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-25 11:44:44
+60,156,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-26 01:05:15
+61,151,J'ai passé un moment en L24.,neutre,2026-05-19 15:07:56
+62,143,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-19 12:07:50
+63,9,J'ai révisé mes cours en C5.,neutre,2026-05-25 15:06:27
+64,151,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-18 19:23:06
+65,120,J'ai assisté à mon cours en C17.,neutre,2026-05-10 19:12:03
+66,143,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-03 23:24:18
+67,196,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-21 06:16:37
+68,84,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-04 21:35:29
+69,60,Le campus est calme aujourd'hui.,neutre,2026-05-02 00:01:40
+70,48,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-14 22:10:24
+71,184,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-13 21:04:03
+72,198,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-25 04:23:18
+73,199,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-08 08:01:44
+74,131,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-23 07:54:44
+75,138,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-06 10:39:27
+76,154,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-21 14:05:18
+77,77,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-04 15:36:58
+78,4,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-24 17:14:51
+79,149,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-13 17:59:13
+80,85,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-23 00:46:22
+81,191,La journée s'est bien passée.,neutre,2026-05-03 17:05:21
+82,179,J'ai révisé mes cours en C5.,neutre,2026-05-05 21:40:43
+83,126,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-24 04:25:51
+84,34,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-12 19:35:03
+85,142,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-16 08:20:46
+86,2,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-17 18:22:38
+87,96,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-05 02:12:19
+88,108,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-15 03:15:27
+89,114,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-11 12:17:20
+90,132,Journée normale sur le campus.,neutre,2026-05-07 04:20:36
+91,10,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-24 08:03:54
+92,80,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-12 17:29:41
+93,90,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-15 07:15:24
+94,105,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-25 17:56:20
+95,139,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-14 13:31:51
+96,170,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-04 09:10:50
+97,64,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-25 23:12:17
+98,44,Les installations sont fonctionnelles.,neutre,2026-05-02 22:47:42
+99,185,J'ai assisté à mon cours en C17.,neutre,2026-05-05 02:22:29
+100,182,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-06 03:09:22
+101,14,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-20 06:34:50
+102,122,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-03 00:23:11
+103,36,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-15 13:00:30
+104,191,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-02 08:11:39
+105,6,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-20 00:31:46
+106,43,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-12 14:19:50
+107,163,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-17 09:45:34
+108,65,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-05 01:28:08
+109,70,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-13 22:36:49
+110,163,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-17 06:17:13
+111,156,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-03 19:11:17
+112,167,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-18 12:18:45
+113,167,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-26 15:57:34
+114,108,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-04 11:02:22
+115,163,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-13 09:00:23
+116,60,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-03 20:47:18
+117,180,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-05 13:46:00
+118,10,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-14 06:41:27
+119,128,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-17 10:30:32
+120,149,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-08 01:07:54
+121,176,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-09 13:52:04
+122,87,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-18 18:52:12
+123,110,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-12 22:41:31
+124,109,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-27 14:38:47
+125,161,J'ai utilisé le laboratoire L21.,neutre,2026-05-26 01:41:15
+126,100,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-15 09:21:45
+127,143,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-02 15:47:46
+128,127,J'ai révisé mes cours en C5.,neutre,2026-05-21 05:51:46
+129,72,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-22 20:18:20
+130,164,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-22 00:40:20
+131,110,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-09 05:43:51
+132,42,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-11 23:17:48
+133,58,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-06 19:48:57
+134,85,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-22 22:49:53
+135,65,J'ai révisé mes cours en C5.,neutre,2026-05-06 22:22:58
+136,134,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-11 11:22:55
+137,21,J'ai passé un moment en L24.,neutre,2026-05-25 03:47:07
+138,28,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-22 13:50:46
+139,13,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-24 12:24:23
+140,15,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-24 22:37:02
+141,103,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-16 18:29:18
+142,81,Journée normale sur le campus.,neutre,2026-05-16 15:37:18
+143,125,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-04 01:42:51
+144,100,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-14 21:56:26
+145,103,Le campus est calme aujourd'hui.,neutre,2026-05-01 14:09:04
+146,110,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-25 17:44:55
+147,178,Journée normale sur le campus.,neutre,2026-05-02 13:08:59
+148,12,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-07 07:50:02
+149,115,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-05 13:33:49
+150,101,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-24 09:54:54
+151,144,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-03 04:02:32
+152,106,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-19 13:59:56
+153,114,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-05 20:47:03
+154,61,J'ai révisé mes cours en C5.,neutre,2026-05-01 22:43:53
+155,112,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-22 13:00:34
+156,94,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-08 17:21:57
+157,34,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-04 09:46:41
+158,149,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-27 18:46:04
+159,38,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-04 17:46:10
+160,105,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-22 16:51:11
+161,69,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-21 03:17:11
+162,14,J'ai utilisé le laboratoire L21.,neutre,2026-05-10 09:29:41
+163,158,J'ai passé un moment en L24.,neutre,2026-05-07 08:15:47
+164,63,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-15 04:07:42
+165,44,J'ai passé un moment en L24.,neutre,2026-05-15 14:51:49
+166,123,J'ai révisé mes cours en C5.,neutre,2026-05-21 12:56:53
+167,121,Les installations sont fonctionnelles.,neutre,2026-05-12 13:51:47
+168,6,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-10 05:57:33
+169,199,Journée normale sur le campus.,neutre,2026-05-24 02:43:56
+170,168,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-25 08:35:57
+171,92,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-08 02:43:04
+172,140,Les installations sont fonctionnelles.,neutre,2026-05-17 23:06:27
+173,48,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-25 09:26:15
+174,119,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-16 21:12:36
+175,55,Journée normale sur le campus.,neutre,2026-05-10 01:37:44
+176,151,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-06 20:17:26
+177,73,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-12 16:35:33
+178,51,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-03 23:17:45
+179,175,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-19 14:13:29
+180,46,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-17 20:51:11
+181,26,Le campus est calme aujourd'hui.,neutre,2026-05-25 07:38:11
+182,143,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-11 07:32:38
+183,42,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-24 07:35:39
+184,80,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-21 19:49:09
+185,83,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-06 11:56:55
+186,141,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-17 13:05:12
+187,107,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-09 06:22:56
+188,148,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-13 16:29:00
+189,84,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-05 09:04:43
+190,71,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-24 11:34:19
+191,142,Les installations sont fonctionnelles.,neutre,2026-05-20 10:37:57
+192,183,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-12 12:47:19
+193,38,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-02 23:20:53
+194,94,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-15 05:16:32
+195,60,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-02 18:57:45
+196,72,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-07 06:41:24
+197,61,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-07 20:52:09
+198,199,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-21 12:16:10
+199,145,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-24 20:40:28
+200,111,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-06 09:01:03
+201,37,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-03 02:34:31
+202,128,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-26 22:39:06
+203,116,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-21 14:38:50
+204,135,Le campus est calme aujourd'hui.,neutre,2026-05-11 17:54:33
+205,73,J'ai assisté à mon cours en C17.,neutre,2026-05-21 04:49:54
+206,184,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-25 06:43:35
+207,114,J'ai assisté à mon cours en C17.,neutre,2026-05-15 01:59:52
+208,171,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-20 09:51:01
+209,56,J'ai assisté à mon cours en C17.,neutre,2026-05-19 00:00:18
+210,165,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-16 08:10:26
+211,12,Le campus est calme aujourd'hui.,neutre,2026-05-10 17:36:14
+212,138,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-26 23:48:00
+213,150,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-01 16:25:40
+214,171,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-09 02:26:16
+215,85,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-09 18:05:56
+216,172,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-25 19:07:24
+217,124,Le campus est calme aujourd'hui.,neutre,2026-05-02 23:23:32
+218,104,J'ai assisté à mon cours en C17.,neutre,2026-05-06 20:41:41
+219,168,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-22 23:37:20
+220,71,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-23 06:14:20
+221,44,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-14 10:26:52
+222,31,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-26 15:39:35
+223,140,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-15 04:05:33
+224,73,J'ai utilisé le laboratoire L21.,neutre,2026-05-19 02:40:32
+225,68,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-19 06:26:43
+226,171,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-22 04:17:02
+227,166,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-05 17:39:47
+228,71,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-23 00:12:24
+229,137,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-24 06:46:26
+230,169,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-08 11:56:06
+231,96,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-23 20:50:07
+232,41,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-16 00:31:41
+233,172,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-13 21:04:41
+234,28,J'ai utilisé le laboratoire L21.,neutre,2026-05-13 16:45:30
+235,191,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-07 17:36:11
+236,53,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-27 09:21:27
+237,57,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-11 04:18:11
+238,137,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-07 21:02:34
+239,51,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-24 08:57:58
+240,22,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-19 07:45:47
+241,164,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-12 22:53:49
+242,197,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-17 21:36:53
+243,182,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-25 04:03:08
+244,135,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-17 16:18:10
+245,100,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-07 17:51:32
+246,156,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-05 00:51:54
+247,21,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-05 22:03:12
+248,166,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-04 06:41:59
+249,97,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-16 04:53:19
+250,98,Journée normale sur le campus.,neutre,2026-05-04 06:53:19
+251,81,J'ai utilisé le laboratoire L21.,neutre,2026-05-16 07:48:55
+252,54,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-04 18:37:09
+253,70,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-25 14:06:40
+254,81,J'ai passé un moment en L24.,neutre,2026-05-07 11:02:28
+255,89,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-23 20:38:04
+256,68,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-11 22:58:31
+257,164,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-21 00:27:17
+258,53,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-10 21:43:37
+259,74,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-12 23:06:39
+260,27,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-09 12:53:33
+261,72,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-27 13:07:04
+262,7,Le campus est calme aujourd'hui.,neutre,2026-05-18 02:15:33
+263,13,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-21 17:20:44
+264,56,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-18 15:54:38
+265,72,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-22 08:28:55
+266,44,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-26 06:52:13
+267,70,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-16 14:48:39
+268,29,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-10 07:12:30
+269,22,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-19 07:21:05
+270,132,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-21 19:41:16
+271,62,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-05 22:06:50
+272,47,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-13 05:45:44
+273,21,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-10 01:36:30
+274,149,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-19 00:11:25
+275,53,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-04 12:36:24
+276,77,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-16 15:02:13
+277,36,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-12 05:33:13
+278,51,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-18 17:03:00
+279,13,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-21 22:39:23
+280,93,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-14 00:50:38
+281,105,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-12 23:01:21
+282,101,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-16 04:39:33
+283,18,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-25 18:26:41
+284,179,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-15 10:35:48
+285,180,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-02 07:56:50
+286,37,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-15 05:00:13
+287,153,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-21 01:26:32
+288,8,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-20 03:33:02
+289,157,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-07 22:49:38
+290,70,La journée s'est bien passée.,neutre,2026-05-16 00:52:48
+291,123,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-01 15:22:16
+292,36,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-23 16:42:05
+293,138,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-12 22:42:47
+294,173,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-22 11:56:40
+295,123,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-15 22:22:33
+296,124,Le campus est calme aujourd'hui.,neutre,2026-05-24 20:22:04
+297,130,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-24 07:06:06
+298,110,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-06 05:27:22
+299,99,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-08 05:00:38
+300,79,J'ai révisé mes cours en C5.,neutre,2026-05-27 13:04:51
+301,88,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-01 20:50:37
+302,52,Journée normale sur le campus.,neutre,2026-05-13 04:59:40
+303,163,Les installations sont fonctionnelles.,neutre,2026-05-16 01:24:28
+304,83,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-26 03:08:08
+305,150,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-09 10:21:25
+306,91,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-14 15:54:28
+307,122,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-23 11:00:41
+308,187,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-08 06:58:47
+309,118,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-14 07:51:57
+310,121,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-27 14:11:08
+311,18,J'ai révisé mes cours en C5.,neutre,2026-05-23 14:42:54
+312,53,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-06 15:34:05
+313,93,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-05 05:38:56
+314,139,J'ai révisé mes cours en C5.,neutre,2026-05-03 21:01:55
+315,164,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-17 14:39:15
+316,137,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-24 11:49:16
+317,149,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-13 16:29:20
+318,129,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-12 20:36:19
+319,30,Les installations sont fonctionnelles.,neutre,2026-05-24 03:12:06
+320,146,Le campus est calme aujourd'hui.,neutre,2026-05-15 03:14:40
+321,7,Les installations sont fonctionnelles.,neutre,2026-05-14 20:12:57
+322,63,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-19 10:59:22
+323,129,J'ai passé un moment en L24.,neutre,2026-05-04 06:54:55
+324,192,Les installations sont fonctionnelles.,neutre,2026-05-27 07:10:43
+325,197,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-27 18:32:40
+326,139,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-22 17:14:13
+327,148,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-10 17:36:34
+328,31,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-14 14:24:23
+329,97,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-17 18:26:00
+330,89,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-12 14:46:17
+331,189,Journée normale sur le campus.,neutre,2026-05-06 17:08:13
+332,68,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-04 14:52:05
+333,101,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-10 08:23:00
+334,8,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-22 16:29:17
+335,23,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-22 13:35:33
+336,101,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-14 16:42:55
+337,82,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-21 07:18:25
+338,42,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-11 18:42:11
+339,108,J'ai utilisé le laboratoire L21.,neutre,2026-05-24 07:20:07
+340,108,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-08 06:00:40
+341,33,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-01 12:51:10
+342,196,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-09 19:56:53
+343,134,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-25 04:48:59
+344,85,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-26 05:35:57
+345,34,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-19 04:50:42
+346,199,J'ai passé un moment en L24.,neutre,2026-05-10 15:07:58
+347,58,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-01 10:29:04
+348,63,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-27 04:53:59
+349,82,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-03 10:47:04
+350,128,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-26 06:55:17
+351,103,J'ai utilisé le laboratoire L21.,neutre,2026-05-24 18:37:18
+352,111,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-18 08:36:46
+353,14,J'ai passé un moment en L24.,neutre,2026-05-23 04:17:45
+354,87,J'ai passé un moment en L24.,neutre,2026-05-11 09:34:03
+355,179,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-10 11:09:03
+356,162,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-18 21:38:50
+357,183,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-23 10:05:59
+358,127,La journée s'est bien passée.,neutre,2026-05-04 13:47:42
+359,83,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-07 15:40:03
+360,99,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-03 16:02:36
+361,57,J'ai assisté à mon cours en C17.,neutre,2026-05-19 06:38:15
+362,40,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-05 21:12:40
+363,51,J'ai passé un moment en L24.,neutre,2026-05-16 01:55:19
+364,13,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-11 21:13:02
+365,92,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-13 05:29:41
+366,45,Le campus est calme aujourd'hui.,neutre,2026-05-01 12:43:48
+367,128,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-10 02:06:46
+368,78,Journée normale sur le campus.,neutre,2026-05-25 09:29:53
+369,68,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-19 12:55:56
+370,60,J'ai assisté à mon cours en C17.,neutre,2026-05-26 08:57:16
+371,171,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-08 00:10:36
+372,120,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-10 23:44:11
+373,197,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-27 05:00:13
+374,25,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-16 01:48:10
+375,76,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-27 12:03:49
+376,41,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-05 01:12:10
+377,175,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-07 07:31:43
+378,186,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-27 08:33:03
+379,150,La journée s'est bien passée.,neutre,2026-05-23 23:30:40
+380,116,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-10 18:53:04
+381,143,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-04 12:17:27
+382,27,J'ai passé un moment en L24.,neutre,2026-05-20 13:48:22
+383,1,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-10 06:23:37
+384,30,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-03 12:42:31
+385,62,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-13 05:55:52
+386,130,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-07 20:08:28
+387,60,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-16 05:38:34
+388,47,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-27 16:57:56
+389,147,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-16 00:51:18
+390,119,Journée normale sur le campus.,neutre,2026-05-08 04:20:46
+391,1,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-06 12:49:02
+392,14,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-21 19:49:52
+393,148,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-11 20:29:33
+394,93,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-15 06:39:03
+395,144,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-22 01:46:53
+396,98,J'ai assisté à mon cours en C17.,neutre,2026-05-23 14:20:55
+397,2,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-23 17:47:12
+398,163,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-24 12:34:55
+399,154,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-03 15:51:34
+400,189,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-18 08:21:28
+401,97,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-11 04:31:32
+402,194,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-10 14:50:41
+403,80,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-23 02:17:34
+404,45,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-22 04:16:58
+405,171,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-03 07:55:34
+406,70,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-17 07:11:33
+407,16,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-02 13:46:42
+408,174,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-06 09:46:29
+409,45,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-04 20:09:49
+410,49,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-27 14:30:25
+411,87,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-20 09:30:12
+412,55,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-07 17:20:39
+413,110,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-24 07:00:28
+414,12,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-25 09:01:22
+415,19,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-10 21:22:47
+416,38,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-12 19:54:46
+417,193,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-18 18:46:08
+418,28,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-17 04:51:31
+419,127,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-10 13:57:38
+420,49,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-23 03:53:42
+421,59,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-26 20:25:19
+422,16,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-09 07:08:10
+423,173,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-17 02:02:38
+424,131,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-15 20:17:32
+425,192,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-06 18:25:02
+426,182,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-07 18:45:39
+427,139,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-27 01:09:08
+428,2,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-25 08:14:24
+429,15,La journée s'est bien passée.,neutre,2026-05-17 07:51:02
+430,109,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-14 22:57:56
+431,30,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-07 10:28:55
+432,22,J'ai passé un moment en L24.,neutre,2026-05-01 20:37:43
+433,67,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-05 15:16:27
+434,105,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-17 20:25:16
+435,109,J'ai passé un moment en L24.,neutre,2026-05-15 12:31:46
+436,200,Le campus est calme aujourd'hui.,neutre,2026-05-02 16:58:48
+437,58,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-08 16:08:42
+438,107,J'ai utilisé le laboratoire L21.,neutre,2026-05-22 16:29:32
+439,87,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-25 22:37:13
+440,24,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-14 06:10:42
+441,189,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-05 06:11:06
+442,150,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-15 18:56:20
+443,161,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-21 04:34:03
+444,85,J'ai passé un moment en L24.,neutre,2026-05-15 13:23:02
+445,18,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-07 01:54:01
+446,77,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-01 21:06:17
+447,11,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-12 01:08:37
+448,10,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-02 11:17:33
+449,177,Les installations sont fonctionnelles.,neutre,2026-05-24 20:07:46
+450,143,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-09 13:00:08
+451,129,Journée normale sur le campus.,neutre,2026-05-15 22:05:06
+452,35,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-23 18:18:18
+453,59,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-24 10:27:28
+454,59,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-17 17:09:26
+455,50,J'ai utilisé le laboratoire L21.,neutre,2026-05-16 01:28:43
+456,42,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-11 23:45:59
+457,148,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-09 14:38:04
+458,115,J'ai utilisé le laboratoire L21.,neutre,2026-05-24 03:43:22
+459,101,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-20 02:07:31
+460,58,Le campus est calme aujourd'hui.,neutre,2026-05-27 19:37:56
+461,132,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-21 23:44:22
+462,82,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-12 23:38:30
+463,54,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-02 13:18:48
+464,82,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-12 02:28:04
+465,61,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-25 18:58:24
+466,147,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-12 15:17:34
+467,38,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-22 00:52:31
+468,2,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-23 23:30:24
+469,119,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-03 21:15:48
+470,71,Les installations sont fonctionnelles.,neutre,2026-05-20 04:33:02
+471,157,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-18 03:51:14
+472,96,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-19 22:27:51
+473,158,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-19 21:36:05
+474,76,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-27 10:51:35
+475,19,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-02 19:37:12
+476,177,Le campus est calme aujourd'hui.,neutre,2026-05-07 12:12:37
+477,184,J'ai utilisé le laboratoire L21.,neutre,2026-05-10 17:36:20
+478,161,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-14 13:15:24
+479,144,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-14 10:14:52
+480,69,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-12 14:25:12
+481,92,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-18 05:47:09
+482,63,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-12 10:32:12
+483,46,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-17 09:20:08
+484,21,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-23 14:22:38
+485,189,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-24 11:51:10
+486,144,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-13 13:31:59
+487,105,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-07 16:52:40
+488,139,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-27 00:54:26
+489,100,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-04 08:02:48
+490,30,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-14 12:42:06
+491,36,Les installations sont fonctionnelles.,neutre,2026-05-19 17:34:22
+492,56,J'ai utilisé le laboratoire L21.,neutre,2026-05-09 20:21:59
+493,179,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-20 12:21:40
+494,165,Le campus est calme aujourd'hui.,neutre,2026-05-01 12:25:09
+495,153,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-09 01:48:21
+496,162,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-15 02:44:33
+497,117,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-12 19:41:42
+498,119,Le campus est calme aujourd'hui.,neutre,2026-05-23 06:15:39
+499,56,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-23 22:07:23
+500,38,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-17 09:01:21
+501,38,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-17 14:51:01
+502,66,Les installations sont fonctionnelles.,neutre,2026-05-21 23:44:53
+503,58,J'ai utilisé le laboratoire L21.,neutre,2026-05-20 00:11:10
+504,79,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-01 07:54:53
+505,50,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-08 08:31:52
+506,110,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-12 09:45:33
+507,106,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-19 21:04:44
+508,117,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-27 06:20:17
+509,111,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-20 01:58:25
+510,50,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-06 05:50:44
+511,199,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-11 05:02:23
+512,36,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-25 07:24:30
+513,200,Journée normale sur le campus.,neutre,2026-05-14 07:12:50
+514,48,J'ai assisté à mon cours en C17.,neutre,2026-05-20 20:30:23
+515,63,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-18 09:41:24
+516,95,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-27 16:43:45
+517,188,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-03 16:44:02
+518,6,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-16 09:44:33
+519,1,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-02 20:18:51
+520,43,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-14 13:46:49
+521,129,Le campus est calme aujourd'hui.,neutre,2026-05-18 07:49:13
+522,164,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-25 20:45:16
+523,46,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-06 00:29:36
+524,153,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-25 06:25:42
+525,57,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-06 14:46:38
+526,159,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-13 08:48:16
+527,105,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-03 22:23:00
+528,115,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-13 06:39:00
+529,15,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-06 06:08:00
+530,14,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-14 20:53:23
+531,24,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-06 10:36:41
+532,88,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-21 20:51:45
+533,173,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-26 03:47:14
+534,36,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-18 05:06:03
+535,164,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-22 07:03:21
+536,138,J'ai utilisé le laboratoire L21.,neutre,2026-05-13 22:29:18
+537,77,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-01 16:28:28
+538,188,Journée normale sur le campus.,neutre,2026-05-07 12:50:37
+539,103,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-26 12:10:16
+540,158,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-04 01:03:46
+541,15,J'ai utilisé le laboratoire L21.,neutre,2026-05-20 14:52:23
+542,173,J'ai révisé mes cours en C5.,neutre,2026-05-23 07:50:51
+543,44,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-06 04:10:47
+544,138,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-18 20:46:51
+545,104,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-01 14:39:46
+546,96,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-14 08:12:28
+547,2,J'ai utilisé le laboratoire L21.,neutre,2026-05-21 04:45:45
+548,162,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-21 09:54:23
+549,176,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-11 13:24:23
+550,40,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-19 05:35:54
+551,130,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-13 09:09:35
+552,121,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-12 08:29:44
+553,45,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-09 17:25:38
+554,169,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-17 01:30:31
+555,149,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-15 01:28:29
+556,155,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-24 08:58:14
+557,36,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-13 05:34:37
+558,41,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-20 07:10:16
+559,133,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-13 05:08:43
+560,121,J'ai passé un moment en L24.,neutre,2026-05-07 19:29:33
+561,65,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-09 22:24:36
+562,127,J'ai utilisé le laboratoire L21.,neutre,2026-05-17 21:28:59
+563,19,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-19 02:09:23
+564,146,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-11 17:06:06
+565,171,Les installations sont fonctionnelles.,neutre,2026-05-12 14:08:59
+566,35,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-15 04:33:07
+567,17,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-08 13:41:10
+568,23,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-25 03:05:36
+569,127,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-12 01:33:39
+570,38,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-26 02:24:08
+571,146,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-09 13:51:12
+572,148,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-02 16:25:36
+573,124,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-04 20:49:51
+574,90,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-25 06:10:16
+575,102,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-19 12:33:14
+576,54,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-08 11:20:07
+577,198,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-10 04:37:45
+578,6,Journée normale sur le campus.,neutre,2026-05-15 08:44:17
+579,163,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-06 09:18:24
+580,129,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-07 04:52:58
+581,37,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-19 12:16:27
+582,143,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-23 22:33:43
+583,104,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-26 16:47:43
+584,47,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-02 10:39:59
+585,179,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-13 08:43:27
+586,24,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-15 14:59:35
+587,19,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-12 12:47:47
+588,179,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-16 16:37:57
+589,44,Les installations sont fonctionnelles.,neutre,2026-05-09 01:34:46
+590,42,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-25 06:31:35
+591,17,Journée normale sur le campus.,neutre,2026-05-08 10:14:58
+592,10,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-05 22:43:56
+593,163,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-03 06:54:28
+594,114,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-24 23:20:01
+595,172,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-01 23:24:05
+596,137,J'ai passé un moment en L24.,neutre,2026-05-26 05:57:38
+597,194,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-27 08:15:11
+598,50,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-19 03:22:59
+599,121,J'ai assisté à mon cours en C17.,neutre,2026-05-08 04:08:36
+600,115,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-02 02:46:40
+601,56,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-03 10:24:11
+602,76,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-13 20:35:03
+603,67,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-09 03:15:04
+604,125,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-24 17:19:18
+605,122,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-04 12:08:50
+606,154,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-04 15:43:47
+607,17,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-04 20:14:51
+608,62,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-09 06:22:57
+609,108,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-06 08:20:42
+610,19,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-05 10:00:38
+611,123,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-12 19:26:10
+612,1,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-02 05:59:19
+613,47,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-17 16:36:37
+614,165,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-20 23:20:31
+615,141,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-20 04:12:55
+616,6,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-02 03:38:57
+617,193,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-14 17:02:11
+618,129,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-04 12:15:28
+619,11,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-09 10:26:13
+620,140,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-12 19:37:31
+621,197,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-27 11:01:32
+622,189,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-14 07:46:09
+623,10,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-21 06:40:50
+624,160,J'ai assisté à mon cours en C17.,neutre,2026-05-16 17:44:10
+625,172,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-26 23:36:17
+626,112,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-02 13:14:52
+627,78,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-21 04:57:59
+628,43,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-22 06:37:48
+629,49,J'ai assisté à mon cours en C17.,neutre,2026-05-20 14:04:15
+630,8,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-02 21:38:50
+631,184,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-16 19:32:23
+632,59,J'ai utilisé le laboratoire L21.,neutre,2026-05-08 17:58:51
+633,18,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-08 02:16:25
+634,59,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-14 14:38:14
+635,84,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-06 17:18:38
+636,41,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-12 14:49:22
+637,72,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-05 11:27:55
+638,18,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-01 11:36:23
+639,148,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-15 21:55:42
+640,115,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-07 07:30:42
+641,2,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-21 17:31:01
+642,48,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-05 22:01:48
+643,91,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-06 09:57:53
+644,102,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-07 03:58:01
+645,104,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-27 19:22:51
+646,185,Journée normale sur le campus.,neutre,2026-05-23 07:21:44
+647,114,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-20 08:44:45
+648,70,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-10 17:19:35
+649,14,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-25 11:02:53
+650,57,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-17 00:51:56
+651,173,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-02 18:56:40
+652,79,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-23 18:20:59
+653,97,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-16 11:59:38
+654,146,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-24 03:55:09
+655,181,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-07 01:59:18
+656,134,Journée normale sur le campus.,neutre,2026-05-21 05:15:57
+657,80,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-04 16:25:42
+658,57,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-08 06:56:09
+659,37,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-05 01:50:39
+660,175,J'ai utilisé le laboratoire L21.,neutre,2026-05-06 03:51:32
+661,96,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-21 16:27:36
+662,189,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-03 19:25:04
+663,53,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-03 09:52:59
+664,191,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-02 18:38:48
+665,36,J'ai assisté à mon cours en C17.,neutre,2026-05-16 07:54:36
+666,46,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-22 06:46:10
+667,106,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-13 18:51:20
+668,25,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-06 05:55:25
+669,146,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-08 12:36:07
+670,24,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-10 03:37:02
+671,104,Le campus est calme aujourd'hui.,neutre,2026-05-05 17:28:01
+672,159,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-23 21:05:40
+673,43,Journée normale sur le campus.,neutre,2026-05-10 16:17:51
+674,127,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-03 05:41:58
+675,87,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-10 04:49:58
+676,99,J'ai révisé mes cours en C5.,neutre,2026-05-20 03:28:48
+677,18,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-02 04:55:57
+678,85,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-27 20:47:14
+679,31,Le campus est calme aujourd'hui.,neutre,2026-05-06 23:16:30
+680,85,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-11 14:59:29
+681,92,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-06 04:26:48
+682,25,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-07 14:04:13
+683,32,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-12 07:08:14
+684,24,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-14 21:45:44
+685,196,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-03 16:54:16
+686,5,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-04 22:44:42
+687,5,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-23 04:35:56
+688,191,Les installations sont fonctionnelles.,neutre,2026-05-07 20:22:41
+689,72,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-25 12:07:45
+690,168,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-08 14:37:58
+691,78,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-02 19:23:49
+692,60,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-02 14:48:08
+693,160,J'ai passé un moment en L24.,neutre,2026-05-16 18:23:57
+694,57,J'ai révisé mes cours en C5.,neutre,2026-05-21 19:42:37
+695,36,J'ai utilisé le laboratoire L21.,neutre,2026-05-01 08:18:48
+696,143,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-26 11:40:21
+697,27,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-08 21:00:03
+698,23,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-06 22:07:44
+699,172,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-07 21:22:02
+700,140,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-24 03:40:37
+701,64,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-09 06:16:35
+702,27,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-02 10:13:42
+703,100,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-09 17:00:53
+704,73,J'ai révisé mes cours en C5.,neutre,2026-05-24 00:56:02
+705,34,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-25 01:12:09
+706,4,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-12 03:15:18
+707,98,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-16 07:54:44
+708,141,J'ai révisé mes cours en C5.,neutre,2026-05-13 08:47:56
+709,178,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-05 09:58:43
+710,138,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-16 22:25:05
+711,165,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-02 21:46:55
+712,95,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-06 14:24:50
+713,61,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-20 07:23:46
+714,49,Journée normale sur le campus.,neutre,2026-05-07 14:46:26
+715,16,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-15 10:35:01
+716,58,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-07 14:33:49
+717,14,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-14 13:39:19
+718,13,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-10 09:58:22
+719,131,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-10 02:08:44
+720,91,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-18 20:49:30
+721,147,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-16 13:01:49
+722,88,J'ai passé un moment en L24.,neutre,2026-05-09 14:16:27
+723,58,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-27 11:24:20
+724,182,J'ai assisté à mon cours en C17.,neutre,2026-05-26 03:59:15
+725,41,J'ai assisté à mon cours en C17.,neutre,2026-05-26 02:49:53
+726,132,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-09 08:27:48
+727,22,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-04 23:55:15
+728,168,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-09 05:48:51
+729,195,J'ai assisté à mon cours en C17.,neutre,2026-05-02 23:51:57
+730,197,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-18 06:04:13
+731,62,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-26 07:12:05
+732,112,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-21 22:42:26
+733,33,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-05 04:54:00
+734,110,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-18 08:23:08
+735,51,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-22 18:31:25
+736,118,Le campus est calme aujourd'hui.,neutre,2026-05-04 00:06:09
+737,123,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-01 14:11:55
+738,193,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-22 00:40:51
+739,164,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-02 14:08:50
+740,33,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-01 08:17:51
+741,198,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-21 15:50:47
+742,94,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-15 11:08:21
+743,144,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-14 19:08:41
+744,165,Journée normale sur le campus.,neutre,2026-05-18 11:50:16
+745,116,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-27 01:42:50
+746,119,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-03 07:22:54
+747,119,J'ai passé un moment en L24.,neutre,2026-05-06 02:53:45
+748,147,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-12 21:32:48
+749,98,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-23 22:12:24
+750,58,Les installations sont fonctionnelles.,neutre,2026-05-09 02:58:56
+751,80,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-17 14:15:33
+752,147,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-06 17:08:32
+753,93,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-27 16:15:14
+754,118,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-04 03:40:15
+755,185,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-16 12:19:19
+756,114,Le campus est calme aujourd'hui.,neutre,2026-05-23 05:11:13
+757,123,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-08 16:40:01
+758,120,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-14 04:55:56
+759,196,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-13 12:01:13
+760,61,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-17 16:16:41
+761,59,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-05 14:35:48
+762,67,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-21 04:39:38
+763,72,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-11 08:42:48
+764,123,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-05 18:30:51
+765,4,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-16 13:19:44
+766,84,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-06 18:24:42
+767,187,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-04 20:50:22
+768,198,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-07 22:07:07
+769,85,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-21 19:25:23
+770,153,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-24 20:06:54
+771,118,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-05 23:57:51
+772,134,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-11 19:54:51
+773,52,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-22 11:28:30
+774,15,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-24 23:38:03
+775,49,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-27 10:53:19
+776,57,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-05 21:44:55
+777,127,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-20 13:48:02
+778,151,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-04 09:30:35
+779,147,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-12 15:59:03
+780,115,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-25 07:49:27
+781,123,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-18 08:29:54
+782,8,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-06 18:37:36
+783,38,Le campus est calme aujourd'hui.,neutre,2026-05-06 07:42:57
+784,51,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-19 05:04:30
+785,117,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-13 07:01:56
+786,84,Les installations sont fonctionnelles.,neutre,2026-05-20 01:27:15
+787,99,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-18 07:29:15
+788,121,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-08 13:36:55
+789,69,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-14 02:36:02
+790,69,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-02 06:00:48
+791,79,J'ai passé un moment en L24.,neutre,2026-05-04 23:40:22
+792,57,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-07 00:50:18
+793,82,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-03 21:54:48
+794,195,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-03 16:13:22
+795,124,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-26 03:34:57
+796,165,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-11 04:30:10
+797,180,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-19 04:32:02
+798,176,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-09 19:27:16
+799,74,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-26 10:40:07
+800,91,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-04 22:03:02
+801,14,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-24 17:19:15
+802,117,J'ai utilisé le laboratoire L21.,neutre,2026-05-27 05:38:48
+803,199,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-27 13:34:09
+804,45,Journée normale sur le campus.,neutre,2026-05-07 07:36:39
+805,73,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-16 09:26:42
+806,175,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-18 20:21:21
+807,104,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-07 11:26:18
+808,22,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-09 21:04:33
+809,123,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-05 12:12:43
+810,200,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-25 19:15:47
+811,67,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-25 01:21:56
+812,107,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-01 12:58:54
+813,43,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-01 09:03:06
+814,192,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-26 16:29:54
+815,94,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-15 14:07:14
+816,125,J'ai révisé mes cours en C5.,neutre,2026-05-24 15:33:42
+817,20,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-19 06:10:00
+818,169,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-18 16:36:35
+819,91,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-02 17:12:25
+820,76,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-17 12:29:44
+821,36,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-10 18:13:57
+822,154,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-07 03:58:28
+823,190,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-20 11:29:02
+824,108,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-22 01:00:18
+825,88,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-24 21:47:08
+826,82,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-22 03:34:00
+827,42,Les installations sont fonctionnelles.,neutre,2026-05-22 12:12:18
+828,75,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-04 09:42:52
+829,25,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-16 18:17:27
+830,179,J'ai utilisé le laboratoire L21.,neutre,2026-05-10 15:38:32
+831,37,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-21 23:57:14
+832,40,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-19 07:02:51
+833,15,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-07 02:54:53
+834,87,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-14 14:01:10
+835,83,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-18 11:38:37
+836,89,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-06 11:57:55
+837,1,Journée normale sur le campus.,neutre,2026-05-05 01:06:44
+838,126,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-04 13:22:03
+839,97,J'ai assisté à mon cours en C17.,neutre,2026-05-19 05:45:21
+840,177,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-17 17:19:15
+841,8,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-14 08:09:24
+842,157,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-05 00:39:20
+843,52,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-27 04:04:56
+844,68,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-07 10:43:34
+845,28,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-19 20:07:27
+846,95,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-25 09:59:28
+847,148,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-03 10:35:11
+848,199,"Trop de monde à la bibliothèque, difficile de trouver une place.",negatif,2026-05-23 19:42:01
+849,80,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-23 07:34:30
+850,117,J'ai révisé mes cours en C5.,neutre,2026-05-26 11:30:06
+851,183,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-04 13:09:51
+852,81,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-10 04:01:50
+853,190,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-16 03:10:12
+854,160,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-09 18:44:20
+855,111,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-08 14:02:41
+856,168,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-07 22:29:26
+857,143,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-27 17:25:00
+858,31,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-03 15:28:01
+859,176,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-13 02:09:20
+860,105,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-23 05:42:32
+861,61,Le campus est calme aujourd'hui.,neutre,2026-05-11 12:15:41
+862,11,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-27 04:39:25
+863,184,Les installations sont fonctionnelles.,neutre,2026-05-03 18:13:39
+864,87,J'ai passé un moment en L24.,neutre,2026-05-21 08:31:02
+865,43,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-18 09:44:41
+866,117,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-21 01:06:37
+867,112,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-09 06:59:40
+868,198,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-12 19:08:30
+869,33,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-25 03:00:35
+870,39,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-02 07:35:48
+871,158,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-16 04:45:41
+872,91,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-08 17:06:38
+873,104,"Problème de connexion internet en C16, c'est frustrant.",negatif,2026-05-17 13:44:40
+874,151,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-25 20:49:45
+875,2,J'ai passé un moment en L24.,neutre,2026-05-12 01:44:53
+876,115,Le campus est calme aujourd'hui.,neutre,2026-05-02 07:48:03
+877,176,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-20 06:22:39
+878,116,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-16 03:02:59
+879,120,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-09 21:23:03
+880,56,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-11 05:56:38
+881,131,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-27 02:14:15
+882,183,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-20 13:50:30
+883,182,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-08 01:56:09
+884,27,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-09 21:52:24
+885,10,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-07 13:28:32
+886,67,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-17 01:07:05
+887,7,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-21 06:49:06
+888,60,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-23 10:16:44
+889,158,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-23 18:15:06
+890,192,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-15 00:40:41
+891,83,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-22 16:12:55
+892,182,J'ai assisté à mon cours en C17.,neutre,2026-05-22 00:32:40
+893,190,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-02 03:03:56
+894,168,J'ai passé un moment en L24.,neutre,2026-05-18 08:06:13
+895,12,Journée normale sur le campus.,neutre,2026-05-24 08:30:42
+896,102,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-02 22:52:19
+897,107,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-23 21:14:49
+898,12,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-26 14:33:51
+899,113,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-18 07:27:11
+900,100,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-03 01:55:26
+901,12,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-13 15:20:18
+902,195,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-04 00:05:20
+903,191,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-16 17:42:52
+904,137,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-25 23:45:16
+905,34,Le campus est calme aujourd'hui.,neutre,2026-05-23 04:25:29
+906,189,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-10 07:40:40
+907,75,Le campus est calme aujourd'hui.,neutre,2026-05-06 19:03:16
+908,43,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-07 12:40:24
+909,191,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-07 08:22:02
+910,165,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-04 08:31:06
+911,86,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-07 18:44:36
+912,126,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-12 22:19:47
+913,137,J'ai révisé mes cours en C5.,neutre,2026-05-02 08:41:10
+914,193,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-23 03:26:21
+915,184,J'ai révisé mes cours en C5.,neutre,2026-05-15 18:50:08
+916,2,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-27 07:36:38
+917,125,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-06 11:15:34
+918,104,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-17 23:10:54
+919,136,J'ai assisté à mon cours en C17.,neutre,2026-05-22 14:40:48
+920,162,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-16 23:55:55
+921,14,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-20 23:02:44
+922,103,J'ai passé un moment en L24.,neutre,2026-05-24 22:27:00
+923,71,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-20 02:00:01
+924,119,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-03 14:25:40
+925,132,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-18 02:12:27
+926,171,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-20 01:45:09
+927,86,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-16 00:45:16
+928,12,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-26 04:23:20
+929,115,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-04 16:43:10
+930,56,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-20 03:53:09
+931,137,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-21 15:15:39
+932,184,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-02 08:47:27
+933,107,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-07 22:07:50
+934,200,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-23 10:01:05
+935,63,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-26 19:24:19
+936,121,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-19 21:11:55
+937,42,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-24 08:38:11
+938,108,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-26 23:00:28
+939,128,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-25 06:40:09
+940,91,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-16 05:17:58
+941,196,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-04 09:50:23
+942,7,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-14 01:38:50
+943,200,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-24 23:37:30
+944,150,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-07 13:42:58
+945,70,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-01 10:24:09
+946,81,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-13 21:13:41
+947,84,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-08 20:17:47
+948,141,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-23 20:45:56
+949,173,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-16 05:54:51
+950,4,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-25 03:10:20
+951,125,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-12 11:37:29
+952,98,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-04 23:22:50
+953,106,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-05 01:12:13
+954,95,"Les chaises en L23 sont inconfortables, difficile de se concentrer.",negatif,2026-05-07 15:55:14
+955,128,"Super cours aujourd'hui à l'Amphi, très intéressant !",positif,2026-05-22 16:55:07
+956,145,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-04 05:31:57
+957,147,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-10 15:16:43
+958,150,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-06 19:20:16
+959,132,Rien de spécial à signaler aujourd'hui.,neutre,2026-05-12 08:50:25
+960,24,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-25 09:37:51
+961,121,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-06 16:53:22
+962,117,La journée s'est bien passée.,neutre,2026-05-02 13:21:50
+963,189,"J'ai adoré la séance de TP en L24, le prof était top.",positif,2026-05-18 17:25:16
+964,84,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-02 02:13:13
+965,135,J'apprécie la propreté des lieux et la disponibilité des ressources.,positif,2026-05-25 02:59:18
+966,169,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-21 16:43:10
+967,57,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-24 09:41:10
+968,54,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-25 22:29:34
+969,108,La journée s'est bien passée.,neutre,2026-05-26 15:22:24
+970,133,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-03 18:09:19
+971,169,"J'ai eu froid en C12, la climatisation était trop forte.",negatif,2026-05-24 16:03:32
+972,176,"Trop de bruit dans les couloirs près de L29, ça dérange.",negatif,2026-05-17 02:36:45
+973,111,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-25 01:07:15
+974,46,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-07 05:37:04
+975,143,J'ai assisté à mon cours en C17.,neutre,2026-05-17 20:07:12
+976,141,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-01 08:23:59
+977,50,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-20 10:37:33
+978,64,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-07 23:12:41
+979,114,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-03 10:28:11
+980,101,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-16 05:11:03
+981,92,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-20 14:46:56
+982,162,J'ai travaillé à la bibliothèque ce matin.,neutre,2026-05-05 17:38:04
+983,142,"Le distributeur de café en panne, c'est dommage.",negatif,2026-05-11 14:52:20
+984,69,Le cours en Amphi était un peu ennuyeux aujourd'hui.,negatif,2026-05-13 21:19:18
+985,122,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-23 00:53:38
+986,178,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-18 11:29:36
+987,33,"Manque de prises électriques en C6, c'est un problème pour les laptops.",negatif,2026-05-08 17:01:05
+988,194,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-11 16:21:13
+989,51,Les informations sur les emplois du temps ne sont pas toujours claires.,negatif,2026-05-22 21:32:45
+990,187,"Très productif en C5 aujourd'hui, petit groupe mais efficace.",positif,2026-05-01 23:37:21
+991,152,"Le campus est vraiment agréable, j'aime y passer mes journées.",positif,2026-05-03 08:19:12
+992,88,"Excellente journée d'étude, tout est bien organisé.",positif,2026-05-02 14:38:45
+993,181,"La bibliothèque est un endroit parfait pour étudier, très calme et bien équipée.",positif,2026-05-26 12:27:12
+994,18,Le campus est calme aujourd'hui.,neutre,2026-05-22 15:55:37
+995,173,"Le laboratoire L20 est un peu vétuste, il faudrait le moderniser.",negatif,2026-05-16 03:12:25
+996,91,"Les équipements du laboratoire L27 sont à la pointe, c'est un plaisir de travailler ici.",positif,2026-05-21 08:23:26
+997,130,"Bonne ambiance en C17, les discussions étaient enrichissantes.",positif,2026-05-08 04:39:53
+998,116,J'ai révisé mes cours en C5.,neutre,2026-05-04 16:12:53
+999,137,J'ai révisé mes cours en C5.,neutre,2026-05-27 00:35:50
+1000,133,"Le personnel est toujours prêt à aider, c'est très appréciable.",positif,2026-05-21 13:29:34

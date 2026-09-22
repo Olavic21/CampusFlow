@@ -1,0 +1,53 @@
+{
+  "name": "CampusFlow — Campus intelligent",
+  "short_name": "CampusFlow",
+  "description": "Jumeau numérique du campus intelligent de SUP'PTIC Yaoundé.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2563EB",
+  "background_color": "#2563EB",
+  "icons": [
+    {
+      "src": "assets/branding/campusflow-icon-48.png",
+      "type": "image/png",
+      "sizes": "48x48",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/branding/campusflow-icon-72.png",
+      "type": "image/png",
+      "sizes": "72x72",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/branding/campusflow-icon-96.png",
+      "type": "image/png",
+      "sizes": "96x96",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/branding/campusflow-icon-128.png",
+      "type": "image/png",
+      "sizes": "128x128",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/branding/campusflow-icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/branding/campusflow-icon-256.png",
+      "type": "image/png",
+      "sizes": "256x256",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/branding/campusflow-icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}

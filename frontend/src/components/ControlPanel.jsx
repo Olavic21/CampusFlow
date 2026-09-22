@@ -1,0 +1,370 @@
+import { useMemo, useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, SlidersHorizontal, Play, Pause, Map, MapPin, FlaskConical, X } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
+import CampusLayoutEngine from '../engine/CampusLayoutEngine';
+
+export default function ControlPanel({
+  buildings,
+  occupancy = {},
+  filters,
+  setFilters,
+  simulation,
+  demoMode = false,
+  onEnterDemo,
+  onExitDemo,
+  onSearchSelect,
+  onExport,
+  darkMode,
+  setDarkMode,
+  loading = false,
+  compact = false,
+  mapViewMode = 'campus',
+  onMapViewModeChange,
+}) {
+  const [query, setQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef(null);
+
+  const suggestions = useMemo(() => {
+    if (query.length < 1) return [];
+    const twinHits = CampusLayoutEngine.search(query).map((t) =>
+      CampusLayoutEngine.enrichBuilding(t, occupancy, buildings),
+    );
+    const apiHits = buildings
+      .filter((b) => b.nom?.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 4);
+    const seen = new Set();
+    return [...twinHits, ...apiHits].filter((b) => {
+      const k = b.code || b.nom;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    }).slice(0, 8);
+  }, [query, buildings, occupancy]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (!inputRef.current?.contains(e.target)) setShowSuggestions(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const toggleType = (type) => {
+    setFilters((f) => ({
+      ...f,
+      types: f.types.includes(type)
+        ? f.types.filter((t) => t !== type)
+        : [...f.types, type],
+    }));
+  };
+
+  return (
+    <header
+      className="absolute top-3 left-3 right-3 z-[500] flex flex-wrap gap-2 pointer-events-none"
+      aria-label="Contrôles de la carte"
+    >
+      <div className="flex flex-wrap gap-2 pointer-events-auto flex-1">
+        <div className={`relative flex-1 ${compact ? 'min-w-[140px]' : 'min-w-[180px] max-w-xs'}`} ref={inputRef}>
+          <label htmlFor="building-search" className="sr-only">
+            Rechercher un bâtiment
+          </label>
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            id="building-search"
+            type="search"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            placeholder="C1, L31, Restaurant…"
+            disabled={loading}
+            autoComplete="off"
+            className="w-full text-sm cf-glass rounded-[20px] pl-9 pr-4 py-2.5 shadow-md border border-white/40 dark:border-slate-600/50 outline-none focus:ring-2 focus:ring-brand disabled:opacity-60 dark:text-white"
+          />
+          <AnimatePresence>
+            {showSuggestions && suggestions.length > 0 && (
+              <motion.ul
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-full mt-1 w-full cf-glass rounded-[20px] shadow-xl border border-white/30 overflow-hidden z-10 dark:text-slate-100"
+              >
+                {suggestions.map((b) => (
+                  <li key={b.id}>
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50 transition"
+                      onClick={() => {
+                        onSearchSelect(b);
+                        setQuery(b.nom);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      <span className="font-semibold">{b.code || b.nom}</span>
+                      {b.code && b.nom !== b.code && (
+                        <span className="text-slate-400 ml-2 text-xs">{b.nom}</span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {onMapViewModeChange && (
+          <div className="flex cf-glass rounded-[20px] p-0.5 shadow-md border border-white/40 dark:border-slate-600/50">
+            <button
+              type="button"
+              onClick={() => onMapViewModeChange('campus')}
+              className={`flex items-center gap-1 px-3 py-2 rounded-[16px] text-xs font-semibold transition ${
+                mapViewMode === 'campus'
+                  ? 'bg-[#2563EB] text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              <Map size={14} />
+              {!compact && 'Vue Campus'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onMapViewModeChange('gps')}
+              className={`flex items-center gap-1 px-3 py-2 rounded-[16px] text-xs font-semibold transition ${
+                mapViewMode === 'gps'
+                  ? 'bg-[#2563EB] text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              <MapPin size={14} />
+              {!compact && 'Vue GPS'}
+            </button>
+          </div>
+        )}
+
+        {/* Filters dropdown */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowFilters((s) => !s)}
+            aria-expanded={showFilters}
+            aria-haspopup="true"
+            className="text-sm cf-glass rounded-[20px] px-4 py-2.5 shadow-md border border-white/40 font-medium hover:bg-white/90 transition focus:outline-none focus:ring-2 focus:ring-brand flex items-center gap-1.5 dark:text-white"
+          >
+            <SlidersHorizontal size={16} />
+            Filtres
+          </button>
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-full mt-1 right-0 w-56 cf-glass rounded-[20px] shadow-xl border border-white/30 p-3 z-10 dark:text-slate-100"
+              >
+                <p className="text-xs font-semibold text-slate-500 mb-2">Type</p>
+                {[
+                  { key: 'amphi', label: 'Amphi' },
+                  { key: 'labo', label: 'Labo' },
+                  { key: 'salle', label: 'Salle' },
+                  { key: 'admin', label: 'Admin' },
+                  { key: 'dortoir', label: 'Dortoir' },
+                  { key: 'service', label: 'Services' },
+                  { key: 'sport', label: 'Sport' },
+                ].map(({ key, label }) => (
+                  <label key={key} className="flex items-center gap-2 text-sm py-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={filters.types.includes(key)}
+                      onChange={() => toggleType(key)}
+                    />
+                    {label}
+                  </label>
+                ))}
+                <p className="text-xs font-semibold text-slate-500 mt-2 mb-1">Congestion</p>
+                <select
+                  value={filters.congestion}
+                  onChange={(e) => setFilters((f) => ({ ...f, congestion: e.target.value }))}
+                  className="w-full text-sm border border-slate-200 rounded-lg px-2 py-1.5"
+                >
+                  <option value="all">Tous</option>
+                  <option value="disponible">Disponibles</option>
+                  <option value="charge">Chargés</option>
+                  <option value="sature">Saturés</option>
+                </select>
+                <label className="flex items-center gap-2 text-sm py-2 mt-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.heatmapOnly}
+                    onChange={(e) => setFilters((f) => ({ ...f, heatmapOnly: e.target.checked }))}
+                  />
+                  Mode heatmap
+                </label>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Mode démo — time machine 7h–19h sur courbes historiques (explicite) */}
+        <div className="flex items-center gap-2 cf-glass rounded-[20px] px-3 py-2 shadow-md border border-white/40 dark:text-white">
+          {demoMode ? (
+            <>
+              <FlaskConical size={14} className="text-violet-500 shrink-0" aria-hidden="true" />
+              <span className="text-sm whitespace-nowrap font-medium tabular-nums">
+                {simulation.formattedTime}
+              </span>
+              <input
+                type="range"
+                min={simulation.sliderMin}
+                max={simulation.sliderMax}
+                value={simulation.timeToSlider}
+                onChange={(e) => simulation.setFromSlider(Number(e.target.value))}
+                aria-label="Heure simulée (mode démo)"
+                className={`accent-brand ${compact ? 'w-16' : 'w-24'}`}
+              />
+              <button
+                type="button"
+                onClick={simulation.togglePlay}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                aria-label={simulation.playing ? 'Pause de la simulation' : 'Lecture de la simulation'}
+              >
+                {simulation.playing ? <Pause size={18} /> : <Play size={18} />}
+              </button>
+              <button
+                type="button"
+                onClick={onExitDemo}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition text-violet-500"
+                aria-label="Quitter le mode démo"
+                title="Revenir aux données temps réel"
+              >
+                <X size={16} />
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onEnterDemo}
+              className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-300 px-1 focus:outline-none focus:ring-2 focus:ring-violet-400 rounded-lg"
+              aria-label="Activer le mode démo"
+              title="Explorer la fréquentation type d'une journée (7h–19h)"
+            >
+              <FlaskConical size={14} aria-hidden="true" />
+              {!compact && 'Mode démo'}
+            </button>
+          )}
+        </div>
+
+        {!compact && (
+        <button
+          type="button"
+          onClick={onExport}
+          className="text-sm cf-glass rounded-[20px] px-3 py-2.5 shadow-md border border-white/40 hover:bg-white/90 transition hidden sm:block focus:outline-none focus:ring-2 focus:ring-brand dark:text-white"
+          aria-label="Exporter la carte en PNG"
+        >
+          PNG
+        </button>
+        )}
+
+        <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+      </div>
+
+    </header>
+  );
+}
+
+export function StatsModal({ globalStats, occupancy, onClose }) {
+  const pct = Math.round(globalStats.occupancyRate * 100);
+  const maxKey = globalStats.maxBuilding?.geoId ?? globalStats.maxBuilding?.id;
+  const minKey = globalStats.minBuilding?.geoId ?? globalStats.minBuilding?.id;
+  const maxPct = maxKey != null
+    ? Math.round((occupancy[maxKey]?.taux ?? globalStats.maxBuilding?.taux ?? 0) * 100)
+    : 0;
+  const minPct = minKey != null
+    ? Math.round((occupancy[minKey]?.taux ?? globalStats.minBuilding?.taux ?? 0) * 100)
+    : 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[600] flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+      role="presentation"
+    >
+      <motion.div
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="stats-modal-title"
+      >
+        <h3 id="stats-modal-title" className="font-bold text-lg mb-4">
+          📊 Stats globales
+        </h3>
+        <div className="space-y-3 text-sm">
+          <div>
+            <p className="text-slate-500 mb-1">Occupation campus : {pct}%</p>
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-600 rounded-full" style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+          <p>Bâtiment le plus chargé : <strong>{globalStats.maxBuilding?.nom}</strong> ({maxPct}%)</p>
+          <p>Bâtiment le plus libre : <strong>{globalStats.minBuilding?.nom}</strong> ({minPct}%)</p>
+          <p>Salles disponibles : <strong>{globalStats.availableRooms} / {globalStats.totalRooms}</strong></p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-4 w-full py-2 bg-slate-100 rounded-xl text-sm font-medium hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          Fermer
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export function CompareModal({ buildings, selection, occupancy, onClose }) {
+  const selected = buildings.filter((b) => selection.includes(b.id));
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-[600] flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-bold mb-4">Comparaison de salles</h3>
+        <div className="space-y-2">
+          {selected.map((b) => {
+            const o = occupancy[b.id] || { count: 0, taux: 0 };
+            return (
+              <div key={b.id} className="flex justify-between text-sm border-b pb-2">
+                <span>{b.nom}</span>
+                <span>{o.count}/{b.capacite} ({Math.round(o.taux * 100)}%)</span>
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={onClose} className="mt-4 w-full py-2 bg-slate-100 rounded-xl text-sm">Fermer</button>
+      </div>
+    </motion.div>
+  );
+}
+
+export function ToastAlert({ message, onClose }) {
+  return (
+    <motion.div
+      initial={{ x: 100, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 100, opacity: 0 }}
+      className="fixed top-4 right-4 z-[700] bg-red-600 text-white rounded-xl px-4 py-3 shadow-xl max-w-xs flex items-start gap-2"
+    >
+      <span className="text-sm flex-1">{message}</span>
+      <button onClick={onClose} className="text-white/80 hover:text-white text-lg leading-none">×</button>
+    </motion.div>
+  );
+}

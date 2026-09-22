@@ -1,0 +1,134 @@
+# Avatars uploadés (garder le dossier via .gitkeep)
+media/avatars/*
+!media/avatars/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.pyre/
+.mypy_cache/
+.pytype/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+*.log
+*.pot
+*.mo
+.DS_Store
+
+# Virtual environment
+.venv/
+venv/
+
+# Distribution / packaging
+*.egg
+*.egg-info
+pip-wheel-metadata/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+
+typing_extensions/_t.py
+
+# Docker
+docker-compose.override.yml
+*.local
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Backup files
+*~
+*.swp
+*.swo
+*.tmp
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Local settings
+*.sqlite3
+
+# SQLite databases (générées localement)
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# ── Secrets / environnement ─────────────────────────────────────────
+# Tout .env est ignoré SAUF les gabarits .env.example (committés, gérés).
+.env
+.env.*
+!.env.example
+!**/.env.example
+# Gabarits de déploiement : .env.production.example, .env.db.example, ...
+# (aucune valeur réelle de secret — uniquement des placeholders <...>)
+!**/.env.*.example
+
+# ── APK / Capacitor ────────────────────────────────────────────────
+*.apk
+frontend/.env.apk
+capacitor.config.*.json
+CampusFlow-lite-debug.apk
+
+# ── Artefact ML binaire (5,3 Mo) — régénéré via ml/train_*.py ou LFS ─
+ml/model.pkl
+model.pkl
+*.pkl
+
+# APK build local (copie racine)
+CampusFlow-lite-debug.apk
+
+# Backend app files
+backend/__pycache__/
+backend/*.pyc
+backend/**/*.pyc
+backend/*.pyo
+backend/**/*.pyo
+
+# .gitignore
+
+__pycache__/
+*.pyc
+
+#mon dataset local que je ne veux pas vous donner
+flux_deepseek.csv

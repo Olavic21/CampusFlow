@@ -52,7 +52,7 @@ function getApiBases() {
     if (DIRECT_BACKEND && !bases.includes(DIRECT_BACKEND)) bases.push(DIRECT_BACKEND);
     return bases;
   }
-  const fallbacks = [DIRECT_BACKEND, 'http://127.0.0.1:8000'];
+  const fallbacks = [DIRECT_BACKEND, import.meta.env.DEV ? 'http://127.0.0.1:8000' : ''];
   for (const fb of fallbacks) {
     if (fb && !bases.includes(fb)) bases.push(fb);
   }

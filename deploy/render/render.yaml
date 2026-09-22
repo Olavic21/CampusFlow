@@ -28,7 +28,7 @@ services:
       - key: JWT_SECRET
         generateValue: true          # secret fort généré par Render, jamais committé
       - key: CORS_ORIGINS
-        value: http://localhost:5173 # à remplacer par l'URL Vercel réelle après déploiement
+        value: https://campus-flow-five-ops1.vercel.app,http://localhost:5173 # URL Vercel de production + dev local (jamais *)
       - key: CORS_ORIGIN_REGEX
         value: ""                    # optionnel : https://.*\.vercel\.app pour les previews
       - key: PUBLIC_API_BASE

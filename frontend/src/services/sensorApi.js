@@ -1,7 +1,9 @@
 const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 // En production, VITE_API_URL est une URL absolue (backend Oracle Cloud).
 const IS_ABSOLUTE_API = /^https?:\/\//i.test(API_BASE);
-const DEV_BACKEND = 'http://127.0.0.1:8000';
+// Repli localhost : uniquement en développement (jamais compilé dans un build de production).
+// L'APK fournit toujours VITE_BACKEND_DIRECT explicitement (.env.apk).
+const DEV_BACKEND = import.meta.env.DEV ? 'http://127.0.0.1:8000' : '';
 
 async function sensorRequest(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {

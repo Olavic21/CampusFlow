@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useSensorData } from '../context/SensorDataContext';
+import { useSensorData } from '../hooks/useSensorData';
 
 /**
  * Chip compacte d'état du campus — visible sur mobile dans l'entête

@@ -4,7 +4,7 @@ import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { X, Navigation, BarChart3, MapPin, AlertCircle, Star } from 'lucide-react';
 import capteursData from '../data/capteurs.json';
 import { fetchFluxHistory, fetchForecast } from '../services/api';
-import { useSensorData } from '../context/SensorDataContext';
+import { useSensorData } from '../hooks/useSensorData';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { getCongestionLevel, NODATA_LEVEL } from '../utils/congestionColor';
 import {

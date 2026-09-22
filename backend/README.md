@@ -16,6 +16,7 @@ Les datasets et le schéma SQL vivent dans **`../data/`** (`schema.sql`, `load_p
 - [Structure du projet](#structure-du-projet)
 - [Installation](#installation)
 - [Lancement](#lancement)
+- [Raccordement des capteurs](#raccordement-des-capteurs)
 - [Endpoints API](#endpoints-api)
 - [Données PostgreSQL](#données-postgresql)
 - [Tests](#tests)
@@ -204,6 +205,10 @@ docker compose up --build
 Adapter `.env` pour les hôtes Docker (`db`, `redis`) — voir les lignes commentées dans `.env.example`.
 
 ---
+
+## Raccordement des capteurs
+
+Le guide complet est disponible dans [`docs/CAPTEURS.md`](../docs/CAPTEURS.md). Il décrit l'enregistrement d'un capteur, les modes `api` et `mqtt`, le format des messages, la diffusion WebSocket et le diagnostic.
 
 ## Endpoints API
 

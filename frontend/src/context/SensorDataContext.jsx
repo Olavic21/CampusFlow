@@ -1,12 +1,11 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import SensorDataContext from './SensorDataContext';
 import { getCongestionLevel, TWIN_DEMO, NODATA_LEVEL, getTwinDemoOccupancy } from '../utils/congestionColor';
 import CampusLayoutEngine from '../engine/CampusLayoutEngine';
 import {
@@ -17,8 +16,6 @@ import {
 } from '../services/sensorProviders';
 import { fetchSensorMode, fetchSensorDashboard } from '../services/sensorApi';
 import { fetchIncidents } from '../services/api';
-
-const SensorDataContext = createContext(null);
 
 /** Au-delà de ce délai sans mise à jour en ligne, les données sont "anciennes". */
 const STALE_MS = 90000;
@@ -278,10 +275,4 @@ export function SensorDataProvider({ children, simulatedTime = null, demo = fals
   return (
     <SensorDataContext.Provider value={value}>{children}</SensorDataContext.Provider>
   );
-}
-
-export function useSensorData() {
-  const ctx = useContext(SensorDataContext);
-  if (!ctx) throw new Error('useSensorData must be used within SensorDataProvider');
-  return ctx;
 }

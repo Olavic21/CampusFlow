@@ -7,7 +7,6 @@ import {
 import { CATEGORY_LABELS, getBuildingMeta } from './buildingMeta';
 import {
   getCongestionLevel,
-  TWIN_DEMO,
   getTwinDemoOccupancy,
 } from '../utils/congestionColor';
 import {
@@ -132,21 +131,21 @@ export class CampusLayoutEngine {
   /** Fusionne occupation API (geoId) + métadonnées twin */
   static enrichBuilding(twin, occupancy = {}, geoBuildings = []) {
     const geoId = twin.geoId;
-    let occ = geoId != null ? occupancy[geoId] : null;
+    let occ = geoId != null ? occupancy[geoId] || occupancy[String(geoId)] : null;
     if (!occ && geoId != null) {
-      const geo = geoBuildings.find((g) => g.id === geoId);
-      if (geo) occ = occupancy[geo.id];
+      const geo = geoBuildings.find((g) => String(g.id) === String(geoId));
+      if (geo) occ = occupancy[geo.id] || occupancy[String(geo.id)];
     }
     if (!occ) {
       // Jumeau sans capteur : occupation INDICATIVE marquée "Démo" —
       // jamais présentée comme un état réel (audit P0-5).
       occ = getTwinDemoOccupancy(twin);
     }
-    const { color, label, level } = occ.simulated
-      ? TWIN_DEMO
-      : getCongestionLevel(occ.taux ?? 0);
+    const { color, label, level } = getCongestionLevel(occ.taux ?? 0);
     const meta = getBuildingMeta(twin);
-    const geo = geoId != null ? geoBuildings.find((g) => g.id === geoId) : null;
+    const geo = geoId != null
+      ? geoBuildings.find((g) => String(g.id) === String(geoId))
+      : null;
     return {
       ...twin,
       ...geo,
@@ -193,13 +192,19 @@ export class CampusLayoutEngine {
           Number.isFinite(Number(g.latitude)) && Number.isFinite(Number(g.longitude)),
       )
       .map((geo) => {
-        const twin = CAMPUS_BUILDINGS.find((b) => b.geoId === geo.id);
+        const twin = CAMPUS_BUILDINGS.find(
+          (b) => String(b.geoId) === String(geo.id),
+        );
         if (twin) {
           claimedGeo.add(geo.id);
           return CampusLayoutEngine.enrichBuilding(twin, occupancy, geoBuildings);
         }
         const meta = getBuildingMeta(geo);
-        const occ = occupancy[geo.id] || { count: 0, taux: 0, capacite: geo.capacite };
+        const occ = occupancy[geo.id] || occupancy[String(geo.id)] || {
+          count: 0,
+          taux: 0,
+          capacite: geo.capacite,
+        };
         const { color, label, level } = getCongestionLevel(occ.taux ?? 0);
         return {
           ...geo,

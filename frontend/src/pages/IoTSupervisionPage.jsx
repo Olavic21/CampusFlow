@@ -9,7 +9,7 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
-import { useSensorData } from '../context/SensorDataContext';
+import { useSensorData } from '../hooks/useSensorData';
 import { useAuth } from '../context/AuthContext';
 import { fetchSensors, injectTestReading } from '../services/sensorApi';
 import { SkeletonList } from '../components/ui/Skeleton';

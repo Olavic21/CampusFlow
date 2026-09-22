@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useSensorData } from '../../context/SensorDataContext';
+import { useSensorData } from '../../hooks/useSensorData';
 
 function SensorModeBadge({ compact }) {
   const { sensorMode, demo, stale } = useSensorData();

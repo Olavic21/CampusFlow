@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { getCongestionLevel } from '../utils/congestionColor';
 import { getBuildingLucideIcon } from '../utils/buildingVisuals';
-import { useSensorData } from '../context/SensorDataContext';
+import { useSensorData } from '../hooks/useSensorData';
 import CampusLayoutEngine from '../engine/CampusLayoutEngine';
 import { safeOccupancy } from '../utils/buildingSafety';
 import { summarizeIoTCampus, buildIoTCampusCatalog } from '../utils/iotCampusCatalog';

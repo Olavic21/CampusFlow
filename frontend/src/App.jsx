@@ -24,7 +24,7 @@ import CampusStatusChip from './components/CampusStatusChip';
 import BuildingSheet from './components/BuildingSheet';
 import SettingsPanel from './components/SettingsPanel';
 import { useCongestion } from './hooks/useCongestion';
-import { SensorDataProvider } from './context/SensorDataContext';
+import { SensorDataProvider } from './context/SensorDataContext.jsx';
 import SensorModeBadge from './components/iot/SensorModeBadge';
 import { usePathfinder } from './hooks/usePathfinder';
 import { useSimulation } from './hooks/useSimulation';

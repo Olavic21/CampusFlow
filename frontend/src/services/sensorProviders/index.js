@@ -15,7 +15,7 @@ function loadFromCapteursJson(buildings, hour, minute) {
   for (const b of buildings) {
     const snap = capteursData.find(
       (s) =>
-        s.location_id === b.id &&
+        String(s.location_id) === String(b.id) &&
         s.heure === hour &&
         s.minute === (minute >= 30 ? 30 : 0),
     );

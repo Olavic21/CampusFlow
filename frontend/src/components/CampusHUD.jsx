@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { useSensorData } from '../context/SensorDataContext';
+import { useSensorData } from '../hooks/useSensorData';
 
 function formatCampusDate() {
   return new Intl.DateTimeFormat('fr-FR', {

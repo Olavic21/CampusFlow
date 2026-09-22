@@ -1,12 +1,13 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# CampusFlow — service systemd du backend FastAPI (Oracle Cloud VM)
+# CampusFlow — service systemd du backend FastAPI (Oracle Cloud VM, SQLite)
 # Installation : sudo cp deploy/oracle/campusflow-api.service /etc/systemd/system/
-#                sudo systemctl daemon-reload && sudo systemctl enable --now campusflow-api
+#                sudo systemctl daemon-reload
+#                sudo systemctl enable --now campusflow-api
 # ─────────────────────────────────────────────────────────────────────────────
 [Unit]
 Description=CampusFlow API (FastAPI / Uvicorn)
 Documentation=https://github.com/nkoumougrinnel/CampusFlow
-After=network-online.target postgresql.service
+After=network-online.target
 Wants=network-online.target
 
 [Service]
@@ -20,13 +21,8 @@ EnvironmentFile=/opt/campusflow/backend/.env
 
 # --workers 1 : obligatoire. Le simulateur de capteurs et le hub WebSocket
 # tiennent un état en mémoire ; plusieurs workers dupliqueraient ces états.
-# --proxy-headers : l'IP et le schéma réels (https) viennent de Nginx.
-ExecStart=/opt/campusflow/.venv/bin/uvicorn app.main:app \
-    --host 127.0.0.1 \
-    --port 8000 \
-    --workers 1 \
-    --proxy-headers \
-    --forwarded-allow-ips=127.0.0.1
+# --proxy-headers : l'IP et le schéma réels (https) sont fournis par Nginx.
+ExecStart=/opt/campusflow/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
 
 # Redémarrage automatique en cas de crash
 Restart=always
@@ -48,6 +44,7 @@ ProtectKernelTunables=true
 ProtectKernelModules=true
 ProtectControlGroups=true
 RestrictSUIDSGID=true
+# Données persistantes (hors dossier de code) : base SQLite + médias
 ReadWritePaths=/var/lib/campusflow
 
 [Install]

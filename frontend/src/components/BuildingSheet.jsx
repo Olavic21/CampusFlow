@@ -5,6 +5,7 @@ import { X, Navigation, BarChart3, MapPin, AlertCircle, Star } from 'lucide-reac
 import capteursData from '../data/capteurs.json';
 import { fetchFluxHistory, fetchForecast } from '../services/api';
 import { useSensorData } from '../context/SensorDataContext';
+import { useModalA11y } from '../hooks/useModalA11y';
 import { getCongestionLevel, NODATA_LEVEL } from '../utils/congestionColor';
 import {
   getBuildingLucideIcon,
@@ -80,6 +81,8 @@ function SheetContent({
 
   // ── Qualification des données (P0-4) + sparkline live ────────────────────
   const geoKey = building?.geoId ?? building?.id;
+  const apiLocationId =
+    geoKey != null && Number.isInteger(Number(geoKey)) ? Number(geoKey) : null;
   const occRaw = (geoKey != null && occupancy[geoKey]) || {};
   const isUnknownOcc = !!occRaw.unknown;
   const isDemoOcc = !!(occRaw.simulated || building?.simulated);
@@ -98,9 +101,10 @@ function SheetContent({
   useEffect(() => {
     let cancelled = false;
     setForecast(null);
+    if (apiLocationId == null) return undefined;
     (async () => {
       try {
-        const resp = await fetchForecast(geoKey);
+        const resp = await fetchForecast(apiLocationId);
         if (!cancelled && resp?.points) setForecast(resp);
       } catch {
         /* hors ligne ou pas assez d'historique — section masquée */
@@ -109,7 +113,7 @@ function SheetContent({
     return () => {
       cancelled = true;
     };
-  }, [geoKey]);
+  }, [apiLocationId]);
 
   // A11y dialogue : piège de focus + Escape (audit P1)
   const modalRef = useModalA11y({ open: true, onClose });
@@ -117,9 +121,10 @@ function SheetContent({
   useEffect(() => {
     let cancelled = false;
     setSpark({ data: null, source: 'local' });
+    if (apiLocationId == null) return undefined;
     (async () => {
       try {
-        const resp = await fetchFluxHistory(geoKey, 'hour');
+        const resp = await fetchFluxHistory(apiLocationId, 'hour');
         if (cancelled) return;
         const pts = (resp?.data ?? [])
           .slice(-8)
@@ -135,7 +140,7 @@ function SheetContent({
     return () => {
       cancelled = true;
     };
-  }, [geoKey]);
+  }, [apiLocationId]);
 
   if (!isValidBuilding(building)) {
     return (

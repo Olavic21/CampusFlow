@@ -19,10 +19,6 @@ SKIP_GIT="${SKIP_GIT:-0}"
 log()  { printf '\033[1;34m[deploy]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[warn  ]\033[0m %s\n' "$*"; }
 
-# Décode les séquences %XX écrites dans DATABASE_URL par setup-vm.sh
-# (mot de passe contenant des caractères réservés d'URL).
-urldecode() { printf '%b' "${1//%/\\x}"; }
-
 [[ $EUID -eq 0 ]] || { echo "À lancer en root (sudo)." >&2; exit 1; }
 
 cd "${APP_DIR}"
@@ -38,21 +34,21 @@ log "Installation / mise à jour des dépendances Python..."
 sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install --quiet --upgrade pip wheel
 sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install --quiet -r "${APP_DIR}/backend/requirements.txt"
 
-log "Application du schéma PostgreSQL (idempotent)..."
-DB_URL="$(grep -E '^DATABASE_URL=' "${APP_DIR}/backend/.env" | cut -d= -f2-)"
-DB_NAME="${DB_URL##*/}"
-DB_USER="${DB_URL#postgresql://}"; DB_USER="${DB_USER%%:*}"
-DB_PASSWORD="${DB_URL#postgresql://${DB_USER}:}"; DB_PASSWORD="${DB_PASSWORD%%@*}"
-DB_PASSWORD="$(urldecode "${DB_PASSWORD}")"
-DB_HOSTPORT="${DB_URL#*@}"; DB_HOST="${DB_HOSTPORT%%:*}"; DB_PORT="${DB_HOSTPORT#*:}"; DB_PORT="${DB_PORT%%/*}"
+log "Base SQLite (hors dossier de code — jamais touchée par la mise à jour)..."
+DB_URL="$(grep -E '^DATABASE_URL=' "${APP_DIR}/backend/.env" | head -n1 | cut -d= -f2-)"
+case "${DB_URL}" in
+    sqlite:////*) DB_FILE="/${DB_URL#sqlite:////}" ;;
+    *) DB_FILE="" ;;
+esac
 
-if command -v psql >/dev/null 2>&1 && [[ -f "${APP_DIR}/data/db/schema.sql" ]]; then
-    PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST:-127.0.0.1}" -p "${DB_PORT:-5432}" \
-        -U "${DB_USER}" -d "${DB_NAME}" -v ON_ERROR_STOP=1 \
-        -f "${APP_DIR}/data/db/schema.sql" >/dev/null
-    log "Schéma à jour."
+if [[ -n "${DB_FILE}" && -f "${DB_FILE}" ]]; then
+    if "${APP_DIR}/.venv/bin/python" "${APP_DIR}/deploy/oracle/sqlite_util.py" check "${DB_FILE}"; then
+        log "Intégrité SQLite confirmée."
+    else
+        warn "Base SQLite en échec de contrôle — restaurer une sauvegarde (voir docs/DEPLOIEMENT.md)."
+    fi
 else
-    warn "psql ou schema.sql indisponible — étape ignorée."
+    log "Aucune base existante : elle sera créée par les migrations."
 fi
 
 log "Migrations légères (init_db)..."

@@ -123,38 +123,46 @@ export function fetchOccupancySimulation(buildings, simulatedTime) {
 export function createWebSocketProvider(buildings, onUpdate, onError) {
   let ws = null;
   let closed = false;
+  let connectTimer = null;
+  let retryTimer = null;
 
   const connect = () => {
     if (closed) return;
-    try {
-      ws = new WebSocket(getWebSocketUrl());
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === 'ping') return;
-          if (msg.type === 'occupancy_update' || msg.type === 'occupancy_snapshot') {
-            const readings = msg.readings || [];
-            if (readings.length) {
-              onUpdate(mapWsReadingsToOccupancy(readings, buildings));
+    connectTimer = setTimeout(() => {
+      connectTimer = null;
+      if (closed) return;
+      try {
+        ws = new WebSocket(getWebSocketUrl());
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'ping') return;
+            if (msg.type === 'occupancy_update' || msg.type === 'occupancy_snapshot') {
+              const readings = msg.readings || [];
+              if (readings.length) {
+                onUpdate(mapWsReadingsToOccupancy(readings, buildings));
+              }
             }
+          } catch {
+            /* ignore */
           }
-        } catch {
-          /* ignore */
-        }
-      };
-      ws.onerror = () => onError?.();
-      ws.onclose = () => {
-        if (!closed) setTimeout(connect, 5000);
-      };
-    } catch {
-      onError?.();
-    }
+        };
+        ws.onerror = () => onError?.();
+        ws.onclose = () => {
+          if (!closed) retryTimer = setTimeout(connect, 5000);
+        };
+      } catch {
+        onError?.();
+      }
+    }, 0);
   };
 
   connect();
 
   return () => {
     closed = true;
+    if (connectTimer) clearTimeout(connectTimer);
+    if (retryTimer) clearTimeout(retryTimer);
     ws?.close();
   };
 }

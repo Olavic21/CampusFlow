@@ -140,6 +140,7 @@ def get_latest_readings_from_db(
         db.query(
             SensorReading.location_id,
             func.avg(SensorReading.occupancy).label("avg_occ"),
+            func.max(SensorReading.timestamp).label("timestamp"),
             func.max(SensorReading.source).label("src"),
             func.avg(SensorReading.confidence_score).label("conf"),
         )

@@ -105,7 +105,7 @@ Le script vérifie automatiquement que la branche existe côté GitHub **et** qu
 
 ### 3.3 Provisionnement complet (script fourni)
 
-Le script installe et configure **tout** : paquets, PostgreSQL + PostGIS, Redis, venv Python, `.env`, migrations, seed, service systemd, Nginx, UFW, HTTPS Let's Encrypt, puis teste l'API.
+Le script installe et configure **tout** : paquets système, venv Python, `.env`, base SQLite, migrations, seed, service systemd, Nginx, UFW, HTTPS Let's Encrypt, puis teste l'API. AUCUN PostgreSQL/PostGIS ni Redis n'est installé.
 
 ```bash
 sudo GIT_REF=mobile-release \
@@ -115,9 +115,9 @@ sudo GIT_REF=mobile-release \
      bash deploy/oracle/setup-vm.sh
 ```
 
-- `DB_PASSWORD` et `JWT_SECRET` : **générés aléatoirement** s'ils ne sont pas fournis, écrits dans `/opt/campusflow/backend/.env` (chmod 600) et **jamais affichés**.
-- Un `DB_PASSWORD` fourni contenant des caractères réservés d'URL (`@ : / # ? & = + %`) est **encodé automatiquement** dans `DATABASE_URL` ; `deploy-backend.sh` et `backup-db.sh` décodent la valeur avant de l'utiliser (logique validée par test round-trip + parsing SQLAlchemy).
-- Le script est **idempotent** : le relancer met à jour le code et réapplique les migrations.
+- `JWT_SECRET` : **généré aléatoirement** s'il n'est pas fourni, écrit dans `/opt/campusflow/backend/.env` (chmod 600) et **jamais affiché**.
+- `DATABASE_URL` pointe vers la base SQLite persistante (`sqlite:////var/lib/campusflow/campusflow.db`, 4 slashes = chemin absolu vérifié par le script via SQLAlchemy).
+- Le script est **idempotent** : le relancer met à jour le code et réapplique les migrations (la base SQLite et les médias, hors dossier de code, sont conservés).
 - Options : `GIT_REF=<branche>` (défaut `main`), `SKIP_CERTBOT=1` (sans domaine), `SEED=0` (ne pas injecter les données de démo), `REPO_URL=...` (fork).
 
 ### 3.4 Ce qui est configuré
@@ -127,7 +127,9 @@ sudo GIT_REF=mobile-release \
 | Code | `/opt/campusflow` (utilisateur système `campusflow`) |
 | Venv | `/opt/campusflow/.venv` |
 | Secrets | `/opt/campusflow/backend/.env` — `chmod 600`, propriétaire `campusflow` |
-| Médias | `/var/lib/campusflow/media` (+ `avatars/`) |
+| Base SQLite | `/var/lib/campusflow/campusflow.db` — persistante, hors dossier de code |
+| Médias | `/var/lib/campusflow/media` (+ `avatars/`) — persistants |
+| Sauvegardes SQLite | `/var/backups/campusflow/campusflow-<date>.db` (copies cohérentes + rotation) |
 | Service | `/etc/systemd/system/campusflow-api.service` → `Restart=always`, `RestartSec=5`, hardening (`NoNewPrivileges`, `ProtectSystem=full`, `ProtectHome=true`) |
 | Commande de démarrage | `.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers` |
 | Nginx | `/etc/nginx/sites-available/campusflow-api` → `127.0.0.1:8000` (+ locations `/ws/`, `/media/`, `/api/`) |
@@ -139,8 +141,8 @@ sudo GIT_REF=mobile-release \
 Gabarit versionné : `backend/.env.production.example` (aucune valeur réelle). Renseignées par `setup-vm.sh` dans `/opt/campusflow/backend/.env` :
 
 ```
-DATABASE_URL=postgresql://campusflow:<DB_PASSWORD>@127.0.0.1:5432/campusflow
-REDIS_URL=redis://127.0.0.1:6379/0
+DATABASE_URL=sqlite:////var/lib/campusflow/campusflow.db
+REDIS_URL=
 CORS_ORIGINS=https://<PROJET>.vercel.app
 CORS_ORIGIN_REGEX=<vide>
 JWT_SECRET=<JWT_SECRET>
@@ -159,7 +161,8 @@ SENSOR_HEARTBEAT_OFFLINE_SEC=90
 RETENTION_DAYS=90
 ```
 
-`REDIS_URL` est optionnel (le client bascule sur un stub si Redis est absent) ; `ML_MODEL_PATH` est optionnel (`/predict` renvoie alors 503).
+4 slashes = chemin SQLite ABSOLU (exigé par SQLAlchemy, vérifié par `setup-vm.sh`).
+`REDIS_URL` est laissé vide : Redis n'est pas installé, `redis_client` utilise son stub gracieux (cache en mémoire). `ML_MODEL_PATH` est optionnel (`/predict` renvoie alors 503).
 
 ## 4. Procédure — Frontend Vercel
 
@@ -189,35 +192,54 @@ RETENTION_DAYS=90
 
 ---
 
-## 5. Base de données
+## 5. Base de données — SQLite persistant
 
 | Élément | Détail |
 |---|---|
-| Technologie | **PostgreSQL + extension PostGIS** (conservée, aucune substitution) |
-| Emplacement | Sur la VM OCI, écoute `127.0.0.1:5432` uniquement |
-| Base / rôle | `campusflow` / `campusflow` (paramétrable : `DB_NAME`, `DB_USER`) |
-| Schéma | `data/db/schema.sql` : `locations` (+ `geom GEOMETRY(Point,4326)`), `schedules`, `flux`, `feedbacks`, `sensors`, `sensor_readings` + index (dont index spatial GIST) |
-| Migrations | `data/db/schema.sql` (idempotent : `CREATE TABLE IF NOT EXISTS`) puis `app/database/init_db.py` à chaque démarrage |
-| ORM | SQLAlchemy 2 — `geom` est ignoré par l'ORM (commentaire explicite dans `models.py`), le code utilise `latitude`/`longitude` |
-| Connexion applicative | `DATABASE_URL=postgresql://<DB_USER>:<DB_PASSWORD>@127.0.0.1:5432/<DB_NAME>` |
-| Alternative conteneurs | `deploy/oracle/docker-compose.prod.yml` (`postgis/postgis:15-3.4` + Redis, ports publiés sur `127.0.0.1` seulement) |
+| Technologie | **SQLite** (décision v1 production — aucun PostgreSQL/PostGIS installé, aucune migration prévue) |
+| Emplacement | **`/var/lib/campusflow/campusflow.db`** — hors du dossier de code `/opt/campusflow`, donc jamais écrasé par un déploiement |
+| Connexion applicative | `DATABASE_URL=sqlite:////var/lib/campusflow/campusflow.db` (**4 slashes** = chemin absolu ; 3 slashes seulement produiraient un chemin relatif au CWD, vérifié automatiquement par `setup-vm.sh` via `sqlalchemy.engine.make_url`) |
+| Création des tables | `Base.metadata.create_all(bind=engine)` dans `app/database/init_db.py` (compatible SQLite) |
+| Migrations | `app/database/init_db.py` à chaque démarrage : ajout idempotent de la colonne `users.role`, index unique `favorite_routes` — requêtes `ALTER TABLE ... ADD COLUMN` et `CREATE UNIQUE INDEX IF NOT EXISTS` compatibles SQLite |
+| Journalisation | Mode WAL activé par `app/database/session.py` (`PRAGMA journal_mode=WAL`, `busy_timeout=15000`) — lectures/écritures concurrentes gérées |
+| Données initiales | `app/utils/seed.py` depuis `data/raw/campus.json` + `data/raw/capteurs.json` (38 bâtiments SUP'PTIC + flux récents) — exécuté par `setup-vm.sh` **uniquement si la base est vide** (comptage via `sqlite_util.py count`) |
+| Permissions | `/var/lib/campusflow` : propriétaire `campusflow:campusflow`, `chmod 750` ; systemd `ReadWritePaths=/var/lib/campusflow` |
 
-### Sauvegarde
+> Note : `data/db/schema.sql` reste présent dans le dépôt comme référence historique (PostgreSQL + PostGIS) mais **n'est utilisé par aucun script de production**.
+
+### Sauvegarde SQLite
+
+La sauvegarde utilise `deploy/oracle/sqlite_util.py backup`, qui appelle l'**API de sauvegarde de SQLite** (`Connection.backup`) produisant un **instantané transactionnel cohérent** — même si l'API écrit pendant l'opération (mode WAL inclus). **Ce n'est jamais un simple `cp`**, qui pourrait copier un fichier en pleine écriture.
 
 ```bash
-sudo bash /opt/campusflow/deploy/oracle/backup-db.sh        # dump custom compressé
+sudo bash /opt/campusflow/deploy/oracle/backup-db.sh        # sauvegarde immédiate
+
 sudo crontab -e      # sauvegarde quotidienne à 03:00
 0 3 * * * /bin/bash /opt/campusflow/deploy/oracle/backup-db.sh >> /var/log/campusflow/backup.log 2>&1
 ```
 
-Sauvegardes dans `/var/backups/campusflow/campusflow-<AAAAmmjj-HHMMSS>.dump`, purge automatique au-delà de `RETENTION_DAYS=14`.
+Le script contrôle ensuite la copie (`integrity_check` + `quick_check`), affiche le nombre de bâtiments sauvegardés, puis purge automatiquement les sauvegardes de plus de `RETENTION_DAYS=14` jours (`sqlite_util.py prune`).
 
-### Restauration
+Sauvegardes : `/var/backups/campusflow/campusflow-<AAAAmmjj-HHMMSS>.db`.
+
+### Restauration SQLite
 
 ```bash
-sudo -u postgres psql -c "CREATE DATABASE campusflow_restore OWNER campusflow;"
-PGPASSWORD=<DB_PASSWORD> pg_restore -h 127.0.0.1 -U campusflow -d campusflow_restore \
-    --no-owner /var/backups/campusflow/campusflow-<date>.dump
+# 1) Arrêter le service pour figer la base
+sudo systemctl stop campusflow-api
+
+# 2) Restaurer (vérifie que la sauvegarde est bien du SQLite et remplace
+#    intégralement le contenu de la base cible)
+sudo /opt/campusflow/.venv/bin/python /opt/campusflow/deploy/oracle/sqlite_util.py \
+    restore /var/backups/campusflow/campusflow-<date>.db /var/lib/campusflow/campusflow.db
+
+# 3) Vérifier la base restaurée
+sudo /opt/campusflow/.venv/bin/python /opt/campusflow/deploy/oracle/sqlite_util.py \
+    check /var/lib/campusflow/campusflow.db
+
+# 4) Redémarrer le service
+sudo systemctl start campusflow-api
+curl -fsS http://127.0.0.1:8000/health
 ```
 
 ---
@@ -305,8 +327,14 @@ Tests automatisés du dépôt (relancés après modification) :
 | Lint des fichiers modifiés | `npx eslint src/services/sensorApi.js src/utils/avatar.js src/services/authApi.js` | ✅ 0 erreur |
 | Build de production | `cd frontend && npm run build` | ✅ `dist/` généré |
 | Syntaxe des scripts de déploiement | `bash -n` sur `setup-vm.sh`, `deploy-backend.sh`, `backup-db.sh` | ✅ 3/3 valides |
-| Encodage du mot de passe DB | round-trip `urlencode`/`urldecode` (bash) sur 3 mots de passe dont `Abc#123?x/y:z@w%v&k=l+m n` | ✅ 4/4 OK |
-| Validité de `DATABASE_URL` produite | `sqlalchemy.engine.make_url(...)` sur l'URL encodée | ✅ mot de passe décodé `Abc#123?x/y:z@w%v`, host/port/base corrects |
+| Parse de `DATABASE_URL` SQLite | `sqlalchemy.engine.make_url('sqlite:////var/lib/campusflow/campusflow.db')` | ✅ `database == /var/lib/campusflow/campusflow.db` (chemin absolu, 4 slashes) |
+| Utilitaires SQLite | `sqlite_util.py check/count/backup/restore/prune` sur une base de test réelle (38 bâtiments + 1 compte utilisateur) | ✅ tous OK, restauration vérifiée (38 bâtiments, 1 compte) |
+| API chemins absolus (hors repo) | Base dans `C:\cf-sqlite-prodcheck\` + `MEDIA_ROOT` externe, `init_db` + `seed` suivis de tests HTTP | ✅ 38 bâtiments, 3648 flux |
+| Auth JWT sur SQLite | `POST /auth/register` → 201, `POST /auth/login` → 200 + `access_token` | ✅ 5/5 avec médias + WebSocket |
+| Avatar (upload/download) | `POST /profile/avatar` (PNG→WebP 64x64), `GET /media/avatars/…` → format image validé | ✅ HTTP 200 |
+| WebSocket | Handshake `101` + trame `occupancy_snapshot` (38 mesures, `SENSOR_MODE=simulation`) | ✅ |
+| Restart / persistance SQLite | Arrêt du processus puis redémarrage sur la **même base** : login du compte pré-restart → 200, avatar pré-restart → 200 | ✅ données conservées |
+| Redéploiement sûr | `DATABASE_URL` hors dossier de code + contrôle d'intégrité avant chaque `deploy-backend.sh` | ✅ documenté et scripté |
 
 ### 8.2 Vérifications à exécuter APRÈS la mise en ligne (non exécutables sans accès cloud)
 
@@ -317,7 +345,7 @@ python scripts/verify_deployment.py --api https://<API_DOMAIN> \
 
 - [ ] API publique joignable en HTTPS (certificat valide)
 - [ ] Endpoints principaux : `locations`, `flux/live`, `flux/history`, `congestion`, `path`, `dashboard`, `sensors`, `incidents`
-- [ ] DONNÉES réellement issues de PostgreSQL + PostGIS (migration + seed effectués)
+- [ ] DONNÉES réellement issues de SQLite (`/var/lib/campusflow/campusflow.db` : migration + seed effectués)
 - [ ] CORS : préflight + GET avec l'origine Vercel
 - [ ] Frontend Vercel : chargement, carte, liste des bâtiments, flux temps réel, WebSocket, avatars
 - [ ] Auth JWT : inscription / connexion / restauration de session
@@ -350,7 +378,7 @@ python scripts/verify_deployment.py --api https://<API_DOMAIN> \
 3. `curl -i http://127.0.0.1:8000/health` → l'API répond-elle en local ?
 4. `curl -i https://<API_DOMAIN>/health` → réponse via Nginx/TLS ? (sinon : Nginx, DNS, Security List)
 5. `sudo nginx -t && systemctl status nginx` → configuration du proxy.
-6. `sudo -u postgres psql -d campusflow -c "SELECT count(*) FROM locations;"` → la base contient-elle des données ?
+6. `sudo /opt/campusflow/.venv/bin/python /opt/campusflow/deploy/oracle/sqlite_util.py count /var/lib/campusflow/campusflow.db locations` → la base contient-elle des données ?
 7. Côté navigateur : erreur CORS → comparer l'origine réelle (onglet Réseau) avec `CORS_ORIGINS` / `CORS_ORIGIN_REGEX` ; erreur 404 → vérifier la `VITE_API_URL` compilée dans le bundle.
 8. `sudo tail -50 /var/log/nginx/campusflow-api.error.log` → 502 = Uvicorn arrêté, 504 = timeout.
 
@@ -361,17 +389,17 @@ python scripts/verify_deployment.py --api https://<API_DOMAIN> \
 | Mesure | État |
 |---|---|
 | `backend/.env` (secrets) | Non versionné (`.gitignore` : `.env`, `.env.*`), `chmod 600`, propriétaire `campusflow` |
-| Gabarits versionnés | `backend/.env.example`, `backend/.env.production.example`, `frontend/.env.example`, `frontend/.env.production.example`, `deploy/oracle/.env.db.example` → **placeholders `<...>` uniquement** (négation Git `!**/.env.*.example` ajoutée) |
+| Gabarits versionnés | `backend/.env.example`, `backend/.env.production.example`, `frontend/.env.example`, `frontend/.env.production.example` → **placeholders `<...>` uniquement** (négation Git `!**/.env.*.example` ajoutée) |
 | Secrets dans le code | Aucun : `JWT_SECRET` par défaut explicitement « à changer » ; contrôle `git ls-files` + `git check-ignore` effectué, **aucun secret détecté** |
 | Rotation historique | Dépôt déjà nettoyé avant ce déploiement (`chore(security): untrack secrets…`, `rotation DB_PASSWORD`) |
-| Exposition réseau | Seuls 22/80/443 ouverts (UFW + Security List). PostgreSQL `127.0.0.1:5432`, Redis `127.0.0.1:6379`, Uvicorn `127.0.0.1:8000` |
+| Exposition réseau | Seuls 22/80/443 ouverts (UFW + Security List). **Aucun** port de base de données (SQLite = fichier local, non exposable). Uvicorn `127.0.0.1:8000` privé |
 | HTTPS | Let's Encrypt (certbot) + redirection HTTP → HTTPS + renouvellement automatique (`certbot.timer`) |
 | Durcissement du service | `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=full`, `ProtectHome`, `ProtectKernel*`, `RestrictSUIDSGID`, `ReadWritePaths=/var/lib/campusflow` |
 | En-têtes HTTP | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` (Nginx) ; HSTS via certbot (`--hsts`) |
 | Endpoints sensibles | `/sensors/test-data` reste réservé aux administrateurs (code existant) — **aucun mécanisme de sécurité n'a été désactivé** |
 | CORS | Liste blanche d'origines ; jamais `*` (incompatible avec `allow_credentials=True`) |
 | Upload d'avatars | 5 Mo maximum, types MIME contrôlés, recompression WebP (code existant conservé) |
-| Mots de passe DB / JWT | Générés aléatoirement par `setup-vm.sh` s'ils ne sont pas fournis, jamais affichés en clair |
+| Mots de passe DB / JWT | `JWT_SECRET` généré aléatoirement par `setup-vm.sh` s'il n'est pas fourni, jamais affiché en clair ; SQLite n'a pas de mot de passe (fichier `chmod 750`, propriétaire `campusflow`) |
 
 ---
 
@@ -381,12 +409,12 @@ python scripts/verify_deployment.py --api https://<API_DOMAIN> \
 
 | Fichier | Rôle |
 |---|---|
-| `deploy/oracle/setup-vm.sh` | Provisionnement complet de la VM (paquets, PostgreSQL + PostGIS, venv, `.env`, migrations, seed, systemd, Nginx, UFW, certbot, tests) |
-| `deploy/oracle/deploy-backend.sh` | Mise à jour idempotente du backend (git pull → dépendances → migrations → restart → health check) |
-| `deploy/oracle/backup-db.sh` | Sauvegarde `pg_dump` compressée + purge de rétention |
+| `deploy/oracle/setup-vm.sh` | Provisionnement complet de la VM (paquets système, venv, `.env`, base SQLite, migrations, seed, systemd, Nginx, UFW, certbot, tests) — ni PostgreSQL ni Redis |
+| `deploy/oracle/deploy-backend.sh` | Mise à jour idempotente du backend (git pull → dépendances → contrôle SQLite → migrations → restart → health check ; la base et les médias, hors dossier de code, sont conservés) |
+| `deploy/oracle/sqlite_util.py` | Utilitaires SQLite testables (stdlib) : `check` (intégrité), `count`, `backup` (copie transactionnelle cohérente), `restore`, `prune` (rotation) |
+| `deploy/oracle/backup-db.sh` | Pilote `sqlite_util.py backup` + `prune` et contrôle la copie (`/var/backups/campusflow/campusflow-<date>.db`) |
 | `deploy/oracle/campusflow-api.service` | Unité systemd (redémarrage auto, hardening, logs journald) |
 | `deploy/oracle/nginx-campusflow-api.conf` | Vhost Nginx (proxy REST, WebSocket, médias, en-têtes de sécurité) |
-| `deploy/oracle/docker-compose.prod.yml` + `.env.db.example` | Alternative conteneurs PostgreSQL/PostGIS + Redis (ports locaux uniquement) |
 | `backend/.env.production.example` | Gabarit des variables backend de production |
 | `frontend/.env.production.example` | Gabarit des variables frontend de production |
 | `frontend/vercel.json` | Configuration Vercel : framework Vite, `npm ci`, `dist`, rewrites SPA, cache des assets |

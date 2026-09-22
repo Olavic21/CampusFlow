@@ -1,45 +1,55 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# CampusFlow — sauvegarde PostgreSQL (VM Oracle Cloud)
+# CampusFlow — sauvegarde de la base SQLite (Oracle Cloud VM)
+#
+# La copie est réalisée avec l'API de sauvegarde de SQLite (instantané
+# transactionnel) : elle reste COHÉRENTE même si l'API écrit pendant l'opération
+# (mode WAL inclus) — contrairement à un simple `cp` du fichier.
 #
 # Usage :
-#   sudo bash deploy/oracle/backup-db.sh              # sauvegarde immédiate
-#   sudo crontab -e                                   # sauvegarde quotidienne 03:00
+#   sudo bash /opt/campusflow/deploy/oracle/backup-db.sh      # sauvegarde immédiate
+#
+# Sauvegarde quotidienne à 03:00 (crontab root) :
 #   0 3 * * * /bin/bash /opt/campusflow/deploy/oracle/backup-db.sh >> /var/log/campusflow/backup.log 2>&1
 #
-# Restauration (base vide) :
-#   sudo -u postgres psql -c "CREATE DATABASE campusflow_restore OWNER campusflow;"
-#   PGPASSWORD=<DB_PASSWORD> pg_restore -h 127.0.0.1 -U campusflow -d campusflow_restore \
-#       --no-owner /var/backups/campusflow/campusflow-<date>.dump
+# Restauration : voir docs/DEPLOIEMENT.md § « Restauration SQLite ».
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/opt/campusflow}"
+ENV_FILE="${APP_DIR}/backend/.env"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/campusflow}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
+UTIL="${APP_DIR}/deploy/oracle/sqlite_util.py"
+PYTHON="${PYTHON:-${APP_DIR}/.venv/bin/python}"
+[[ -x "${PYTHON}" ]] || PYTHON="python3"
 
-ENV_FILE="${APP_DIR}/backend/.env"
-[[ -f "${ENV_FILE}" ]] || { echo "Fichier ${ENV_FILE} introuvable." >&2; exit 1; }
+log()  { printf '\033[1;34m[backup]\033[0m %s\n' "$*"; }
+die()  { printf '\033[1;31m[error ]\033[0m %s\n' "$*" >&2; exit 1; }
 
-DB_URL="$(grep -E '^DATABASE_URL=' "${ENV_FILE}" | cut -d= -f2-)"
-DB_NAME="${DB_URL##*/}"
-DB_USER="${DB_URL#postgresql://}"; DB_USER="${DB_USER%%:*}"
-DB_PASSWORD="${DB_URL#postgresql://${DB_USER}:}"; DB_PASSWORD="${DB_PASSWORD%%@*}"
-# Mot de passe encodé dans DATABASE_URL (%40, %23, ...) : décoder pour PGPASSWORD
-DB_PASSWORD="$(printf '%b' "${DB_PASSWORD//%/\\x}")"
-DB_HOSTPORT="${DB_URL#*@}"; DB_HOST="${DB_HOSTPORT%%:*}"; DB_PORT="${DB_HOSTPORT#*:}"; DB_PORT="${DB_PORT%%/*}"
+[[ -f "${ENV_FILE}" ]] || die "Fichier ${ENV_FILE} introuvable."
+[[ -f "${UTIL}" ]] || die "Outil introuvable : ${UTIL}"
+
+# DATABASE_URL=sqlite:////var/lib/campusflow/campusflow.db → /var/lib/campusflow/campusflow.db
+DB_URL="$(grep -E '^DATABASE_URL=' "${ENV_FILE}" | head -n1 | cut -d= -f2-)"
+case "${DB_URL}" in
+    sqlite:////*) DB_FILE="/${DB_URL#sqlite:////}" ;;
+    *) die "DATABASE_URL n'est pas un chemin SQLite absolu (attendu sqlite:////... ), valeur lue : ${DB_URL}" ;;
+esac
+[[ -f "${DB_FILE}" ]] || die "Base introuvable : ${DB_FILE}"
 
 mkdir -p "${BACKUP_DIR}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
-FILE="${BACKUP_DIR}/campusflow-${STAMP}.dump"
+DEST="${BACKUP_DIR}/campusflow-${STAMP}.db"
 
-PGPASSWORD="${DB_PASSWORD}" pg_dump \
-    -h "${DB_HOST:-127.0.0.1}" -p "${DB_PORT:-5432}" \
-    -U "${DB_USER}" -d "${DB_NAME}" \
-    --format=custom --compress=9 \
-    --file="${FILE}"
+log "Sauvegarde cohérente : ${DB_FILE} → ${DEST}"
+"${PYTHON}" "${UTIL}" backup "${DB_FILE}" "${DEST}" || die "Échec de la sauvegarde."
 
-echo "$(date -Is) sauvegarde OK → ${FILE} ($(du -h "${FILE}" | cut -f1))"
+ROWS="$("${PYTHON}" "${UTIL}" count "${DEST}" locations 2>/dev/null || echo '?')"
+log "Contenu de la sauvegarde : ${ROWS} bâtiments"
 
-find "${BACKUP_DIR}" -name 'campusflow-*.dump' -type f -mtime "+${RETENTION_DAYS}" -delete
-echo "$(date -Is) purge : sauvegardes de plus de ${RETENTION_DAYS} jours supprimées"
+log "Rotation : suppression des sauvegardes de plus de ${RETENTION_DAYS} jours"
+"${PYTHON}" "${UTIL}" prune "${BACKUP_DIR}" "${RETENTION_DAYS}"
+
+log "Sauvegardes disponibles :"
+ls -1sh "${BACKUP_DIR}"/campusflow-*.db 2>/dev/null | sed 's/^/    /' || true

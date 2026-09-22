@@ -1,7 +1,40 @@
 # CampusFlow — Guide de déploiement en production
 
-> **Backend : Oracle Cloud (OCI)** · **Frontend : Vercel** · **Base : PostgreSQL + PostGIS**
-> Dernière révision : 21/09/2026 — branche de référence : `mobile-release`
+> ## ⚠️ ARCHITECTURE ACTUELLE : VERCEL + RENDER (SQLite)
+>
+> Le déploiement de référence est désormais :
+>
+> ```
+> GitHub
+>  ├──► Vercel  — React 19 + Vite 8 (frontend/, Root Directory = frontend)
+>  └──► Render  — FastAPI + Uvicorn + SQLite (backend/, Root Directory = backend)
+> ```
+>
+> → **Guide Render** : [`deploy/render/README.md`](../deploy/render/README.md)
+> → **Blueprint Render** : [`deploy/render/render.yaml`](../deploy/render/render.yaml)
+> → **Gabarit env Render** : [`deploy/render/.env.render.example`](../deploy/render/.env.render.example)
+>
+> **Limitation Render Free** : le système de fichiers local est éphémère.
+> **SQLite sur Render Free = stockage non durable** — la base (recréée par
+> `init_db()` + seed à chaque démarrage : 38 bâtiments SUP'PTIC, capteurs simulés)
+> et les avatars uploadés sont perdus lors d'un redéploiement/replacement.
+> Un Disk Render (Starter+) monté sur `/data` avec
+> `DATABASE_URL=sqlite:////data/campusflow.db` est requis pour la persistance.
+> Cette architecture est une **version de démonstration/test**, pas une
+> infrastructure de production durable.
+>
+> ---
+>
+> ## 🗄️ OBSOLÈTE — La suite de ce document décrit le déploiement Oracle Cloud
+>
+> Les sections suivantes (Oracle Cloud, systemd, Nginx, `/var/lib/campusflow`,
+> PostgreSQL+PostGIS) sont **historiques** : `deploy/oracle/` n'est plus le chemin
+> de déploiement principal. Ne pas l'utiliser pour un nouveau déploiement.
+>
+> ---
+
+> Backend : Render (FastAPI + SQLite) · Frontend : Vercel · ~~Historique : Oracle Cloud (OCI) + PostgreSQL + PostGIS~~
+> Dernière révision : 22/09/2026 — branche de référence : `mobile-release`
 
 ## 0. Statut du déploiement — à lire avant tout
 

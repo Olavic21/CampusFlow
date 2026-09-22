@@ -4,7 +4,8 @@ Application de visualisation des flux, localisation, navigation et intelligence 
 
 > Audit complet + roadmap réalisés ( voir [`docs/audit-roadmap.md`](docs/audit-roadmap.md) ).
 > Suite de tests backend reconstruite (55 tests, 0 échec). Qualité des données qualifiée (REAL/SIM/TWIN/STALE).
-> **Déploiement production : Vercel (frontend) + Oracle Cloud (backend) → [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md)**
+> **Déploiement production : Vercel (frontend) + Render (backend FastAPI + SQLite) → [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md)** — guide Render : [`deploy/render/README.md`](deploy/render/README.md)
+> **Raccordement des capteurs :** voir [`docs/CAPTEURS.md`](docs/CAPTEURS.md) pour MQTT, HTTP, les payloads et le fonctionnement temps réel.
 
 ```
 CampusFlow/
@@ -12,7 +13,7 @@ CampusFlow/
 ├── backend/      # FastAPI — API routes, IoT, routage, prévisions, RBAC
 ├── data/         # campus.json (38 bâtiments), capteurs, flux historique, schema.sql
 ├── ml/           # Modèle prédiction (optionnel, gardé derrière feature flag)
-├── deploy/       # Déploiement Oracle Cloud (setup-vm.sh, systemd, Nginx, sauvegarde DB)
+├── deploy/       # render/ = Vercel + Render (actif) · oracle/ = historique (obsolète)
 ├── docs/         # Documentation + rapport d'audit + guide de déploiement
 ├── scripts/      # Build APK, restart backend, vérification de déploiement, SDK Android...
 └── android/      # Projet Capacitor (généré)
@@ -218,32 +219,43 @@ Installer Pillow : `pip install Pillow` (inclus dans `requirements.txt`).
 
 ---
 
-## Déploiement en production — Vercel (frontend) + Oracle Cloud (backend)
+## Déploiement en production — Vercel (frontend) + Render (backend)
 
-Guide complet : **[`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md)** (architecture, réseau, HTTPS, migrations, CORS, tests, maintenance).
+Guide complet : **[`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md)** · Procédure Render détaillée : **[`deploy/render/README.md`](deploy/render/README.md)** · Blueprint : [`deploy/render/render.yaml`](deploy/render/render.yaml)
+
+> ⚠️ **Render Free = stockage non durable** : SQLite et les avatars sont recréés à chaque
+> redéploiement (seed automatique : 38 bâtiments + capteurs simulés). Version de
+> démonstration/test — un Disk Render (Starter+) monté sur `/data` est requis pour la persistance.
 
 ```bash
-# Backend — sur la VM Oracle Cloud (Ubuntu), depuis /opt/campusflow
-sudo GIT_REF=mobile-release \
-     API_DOMAIN=api-campusflow.<domaine> \
-     LETSENCRYPT_EMAIL=vous@example.com \
-     CORS_ORIGINS=https://<projet>.vercel.app \
-     bash deploy/oracle/setup-vm.sh        # PostgreSQL+PostGIS, systemd, Nginx, HTTPS, seed
+# 1. Backend — Render : Web Service
+#    Root Directory = backend · Build = pip install -r requirements.txt
+#    Start = uvicorn app.main:app --host 0.0.0.0 --port $PORT
+#    Env : DATABASE_URL=sqlite:////opt/render/project/src/data/campusflow.db
+#          JWT_SECRET=<généré par Render> · SENSOR_MODE=simulation
+#          CORS_ORIGINS=http://localhost:5173  (puis URL Vercel réelle à l'étape 3)
+# → https://<service>.onrender.com  (tester /health puis /docs)
 
-# Frontend — Vercel : Root Directory = frontend
-#   VITE_API_URL=https://api-campusflow.<domaine>
-#   VITE_WS_URL=wss://api-campusflow.<domaine>
-#   VITE_BACKEND_DIRECT=https://api-campusflow.<domaine>
-#   VITE_SENSOR_MODE=api
+# 2. Frontend — Vercel : Root Directory = frontend
+#    VITE_API_URL=https://<service>.onrender.com
+#    VITE_WS_URL=wss://<service>.onrender.com   (optionnel : dérivé de VITE_API_URL sinon)
+# → https://<projet>.vercel.app
 
-# Vérification réelle après déploiement (API, base, CORS, frontend, absence de localhost)
-python scripts/verify_deployment.py --api https://<API_DOMAIN> \
+# 3. CORS — Render → Environment →
+#    CORS_ORIGINS=https://<projet>.vercel.app,http://localhost:5173  (jamais *)
+
+# 4. Vérification réelle de la chaîne complète (API, base, CORS, frontend)
+python scripts/verify_deployment.py --api https://<service>.onrender.com \
     --frontend https://<projet>.vercel.app --origin https://<projet>.vercel.app
 ```
 
+> Le déploiement historique Oracle Cloud (`deploy/oracle/`) est **obsolète** — conservé à titre d'historique.
+
 ---
 
-## Production PostgreSQL
+## Production PostgreSQL (optionnel — non utilisé par le déploiement actuel)
+
+Le déploiement actuel utilise **SQLite** (Render). PostgreSQL reste possible en dev via Docker :
 
 ```bash
 # Docker

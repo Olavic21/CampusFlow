@@ -45,6 +45,18 @@ async def lifespan(app: FastAPI):
     init_db()
     ensure_avatar_dir()
 
+    # Auto-seed au premier démarrage : si la base est vide (ex. Render Free où le
+    # disque est éphémère), charger campus.json (38 bâtiments SUP'PTIC) + flux.
+    # Jamais destructif : ne s'exécute QUE si aucune location n'existe.
+    with SessionLocal() as db:
+        from app.database.models import Location
+        if db.query(Location).count() == 0:
+            try:
+                from app.utils.seed import seed_database
+                seed_database(db)
+            except Exception as e:
+                logger.error("Auto-seed impossible : %s", e)
+
     with SessionLocal() as db:
         n = ensure_sensors_seeded(db)
         if n:

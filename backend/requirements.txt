@@ -20,7 +20,6 @@ Pillow==11.0.0
 
 # --- Database ---
 SQLAlchemy==2.0.50
-psycopg2-binary==2.9.12
 greenlet==3.1.1
 
 # --- Cache ---
@@ -45,14 +44,3 @@ threadpoolctl==3.5.0
 
 # --- Graph ---
 networkx==3.4.2
-
-# --- Visualization ---
-matplotlib==3.9.0
-seaborn==0.13.2
-
-# --- Load testing ---
-locust==2.32.4
-
-# --- Dev / lint / test ---
-pytest==9.0.3
-flake8==7.3.0

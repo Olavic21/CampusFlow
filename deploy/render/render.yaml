@@ -1,0 +1,48 @@
+# Render Blueprint — CampusFlow Backend (FastAPI + SQLite)
+# Déploiement : Render Dashboard → New → Blueprint → sélectionner ce dépôt,
+# ou bouton "Deploy to Render" avec ce fichier à la racine du blueprint.
+#
+# Limitation Render Free : système de fichiers local NON durable.
+# SQLite fonctionne, mais les données peuvent être perdues lors d'un
+# redéploiement ou d'un replacement du service. Version de démonstration/test.
+#
+# Option Disk : disponible uniquement sur les plans payants (Starter+).
+# Sur Free, la variable DATABASE_URL pointe vers /opt/render/project/src/data/
+# (éphémère) — acceptable pour une démo, documenté dans docs/DEPLOIEMENT.md.
+
+services:
+  - type: web
+    name: campusflow-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: DATABASE_URL
+        value: sqlite:////opt/render/project/src/data/campusflow.db
+      - key: JWT_SECRET
+        generateValue: true          # secret fort généré par Render, jamais committé
+      - key: CORS_ORIGINS
+        value: http://localhost:5173 # à remplacer par l'URL Vercel réelle après déploiement
+      - key: CORS_ORIGIN_REGEX
+        value: ""                    # optionnel : https://.*\.vercel\.app pour les previews
+      - key: PUBLIC_API_BASE
+        value: https://campusflow-api.onrender.com
+      - key: SENSOR_MODE
+        value: simulation
+      - key: SENSOR_SIM_INTERVAL_SEC
+        value: "10"
+      - key: CAPTEURS_JSON_PATH
+        value: /opt/render/project/src/data/raw/capteurs.json
+      - key: MEDIA_ROOT
+        value: /opt/render/project/src/data/media
+      - key: MEDIA_URL
+        value: /media
+      # REDIS_URL non défini : redis_client utilise son stub gracieux (cache mémoire)
+      # ML_MODEL_PATH non défini + model.pkl absent du dépôt (gitignored) :
+      # /predict renvoie 503 — feature ML optionnelle, cf. section 24 du cahier des charges.

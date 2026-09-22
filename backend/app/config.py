@@ -15,6 +15,19 @@ class Settings:
         "DATABASE_URL",
         "sqlite:///./campusflow.db",
     )
+    # SQLite : chemin absolu + création du dossier parent si nécessaire
+    # (ex. /opt/render/project/src/data sur Render, /data avec un Disk Render).
+    if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+        from sqlalchemy.engine import make_url
+        _db = make_url(SQLALCHEMY_DATABASE_URL).database
+        if _db and _db != ":memory:":
+            _db_path = Path(_db)
+            if not _db_path.is_absolute():
+                # Relatif au dossier backend/ (indépendant du CWD) —
+                # obligatoire pour Render avec Root Directory = backend.
+                _db_path = (_BACKEND_DIR / _db_path).resolve()
+            _db_path.parent.mkdir(parents=True, exist_ok=True)
+            SQLALCHEMY_DATABASE_URL = f"sqlite:///{_db_path.as_posix()}"
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     _DEFAULT_CORS = (
         "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,"

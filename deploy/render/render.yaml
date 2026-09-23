@@ -28,11 +28,13 @@ services:
       - key: JWT_SECRET
         generateValue: true          # secret fort généré par Render, jamais committé
       - key: CORS_ORIGINS
-        value: https://campus-flow-five-ops1.vercel.app,http://localhost:5173 # URL Vercel de production + dev local (jamais *)
+        # URL Vercel de production + origines APK Capacitor (WebView androidScheme
+        # https → Origin "https://localhost" ; doc : docs/DEPLOIEMENT.md §CORS) + dev local.
+        value: https://campus-flow-five-ops1.vercel.app,https://localhost,capacitor://localhost,http://localhost:5173 # jamais *
       - key: CORS_ORIGIN_REGEX
         value: ""                    # optionnel : https://.*\.vercel\.app pour les previews
       - key: PUBLIC_API_BASE
-        value: https://campusflow-api.onrender.com
+        value: https://campusflow-api-pc7e.onrender.com
       - key: SENSOR_MODE
         value: simulation
       - key: SENSOR_SIM_INTERVAL_SEC

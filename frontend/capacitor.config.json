@@ -5,6 +5,9 @@
   "server": {
     "androidScheme": "https"
   },
+  "android": {
+    "allowMixedContent": true
+  },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,
@@ -17,8 +20,5 @@
       "style": "LIGHT",
       "backgroundColor": "#2563EB"
     }
-  },
-  "android": {
-    "allowMixedContent": true
   }
 }

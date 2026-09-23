@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  CampusFlow — sécurité réseau (APK Android).
+
+  Production : HTTPS/WSS uniquement (backend Render) — cleartext HTTP bloqué
+  par défaut (consigne : ne pas autoriser globalement le trafic non chiffré).
+  Développement : le workflow APK LAN documenté (docs/mobile/INSTALLATION.md,
+  backend sur l'IP Wi-Fi fixe 10.94.13.27 — scripts/set-wifi-static-ip.ps1)
+  reste autorisé via la liste d'origines explicite ci-dessous.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.94.13.27</domain>
+    </domain-config>
+</network-security-config>

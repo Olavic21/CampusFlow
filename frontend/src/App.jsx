@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo, lazy, Suspense } fro
 import { AnimatePresence } from 'framer-motion';
 
 import { useAuth } from './context/AuthContext';
+import { useBackendReady } from './hooks/useBackendReady.js';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import { SkeletonList } from './components/ui/Skeleton';
@@ -90,6 +91,7 @@ function CampusFlowMain() {
 
 function CampusFlowShell({ simulation }) {
   const { user, logout } = useAuth();
+  const { status: backendStatus, ready: backendReady } = useBackendReady();
   const isMobile = !useMediaQuery('(min-width: 768px)');
   const { darkMode, setDarkMode, toggleDarkMode } = useTheme();
   const { buildings, occupancy, offline, loading, globalStats, demo, incidents } =
@@ -564,7 +566,9 @@ function CampusFlowShell({ simulation }) {
       className={`flex w-full overflow-hidden ${darkMode ? 'dark' : ''} bg-slate-100 dark:bg-[#1F2937]`}
       style={{ height: '100dvh' }}
     >
-      <AnimatePresence>{showSplash && <SplashScreen visible />}</AnimatePresence>
+      <AnimatePresence>
+        {showSplash && <SplashScreen visible status={backendStatus} />}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showOnboarding && <OnboardingOverlay onFinish={finishOnboarding} />}
@@ -752,7 +756,10 @@ function CampusFlowShell({ simulation }) {
                 )}
               </Suspense>
 
-              <MapLoadingOverlay visible={loading} />
+              <MapLoadingOverlay
+                visible={loading}
+                label={backendReady ? 'Chargement du campus…' : 'Connexion au serveur…'}
+              />
 
               <div className="absolute top-3 right-3 z-[450] pointer-events-none">
                 <div className="pointer-events-auto">

@@ -82,6 +82,57 @@ python scripts/verify_api.py
 
 ---
 
+## Initialisation frontend (cold start + readiness)
+
+Le frontend applique désormais une séquence centralisée et protégé :
+
+```text
+Application
+→ GET /health
+→ backend READY
+→ chargement des données métier
+→ initialisation WebSocket
+→ Application READY
+```
+
+- Phase 1 : vérification backend via `GET /health` avec timeout + retry + exponential backoff.
+- Phase 2 : chargement des données seulement après `backend READY`.
+- WebSocket démarré après readiness, avec reconnexion automatique et cleanup.
+- États UI : `Connexion au serveur…`, `Serveur en démarrage…`, `Connecté`, `Reconnexion…`, `Hors ligne`.
+
+### Cold start et retries
+
+- timeout par tentative : 10 s
+- backoff : 2 s → 5 s → 10 s → 20 s → 30 s puis plafond 30 s
+- retries : bornées par `MAX_HEALTH_ATTEMPTS`
+- erreurs temporaires (`Failed to fetch`, timeout, 5xx, 408, 429) = retryables
+- erreurs métier (`401`, `403`, `404`, `422`) = non retryables
+
+### WebSocket
+
+- une seule connexion WebSocket par fonctionnalité
+- reconnexion après échec avec backoff 1 s, 2 s, 5 s, 10 s, 20 s, 30 s
+- reset du compteur après ouverture réussie
+- suppression des listeners, timers et callbacks sur cleanup
+- pause des retries hors ligne, reprise propre au retour de connexion
+
+### APK Android
+
+```bash
+cd frontend
+npm run build
+npx cap sync android
+cd android
+./gradlew.bat assembleDebug --no-daemon
+```
+
+- Frontend production : Vercel build de production
+- Backend : Render HTTPS/WSS uniquement
+- Aucun `localhost` / `127.0.0.1` dans la configuration APK de production
+- Sortie APK dans `frontend/android/app/build/outputs/apk/debug/` ou copie dans `release/` selon le workflow local
+
+---
+
 ## Endpoints API
 
 | Route | Description |

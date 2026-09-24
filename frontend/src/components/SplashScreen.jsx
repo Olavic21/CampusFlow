@@ -1,8 +1,18 @@
 import { motion } from 'framer-motion';
 import BrandLogo from './brand/BrandLogo';
 
-export default function SplashScreen({ visible }) {
+/** Libellés d'état du backend affichés pendant le démarrage (cold start inclus). */
+const STATUS_HINT = {
+  checking: 'Connexion au serveur…',
+  starting: 'Le serveur démarre…',
+  reconnecting: 'Reconnexion…',
+  offline: 'Serveur injoignable — vérifiez votre connexion',
+};
+
+export default function SplashScreen({ visible, status = null }) {
   if (!visible) return null;
+
+  const hint = status === 'online' ? null : STATUS_HINT[status] ?? null;
 
   return (
     <motion.div
@@ -38,6 +48,18 @@ export default function SplashScreen({ visible }) {
         >
           Jumeau numérique du campus intelligent
         </motion.p>
+        {hint && (
+          <motion.p
+            className="text-white/90 text-xs mt-4 font-medium bg-white/15 rounded-full px-3 py-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            role="status"
+            aria-live="polite"
+          >
+            {hint}
+          </motion.p>
+        )}
         <div className="flex gap-1.5 mt-10">
           {[0, 1, 2].map((i) => (
             <motion.span

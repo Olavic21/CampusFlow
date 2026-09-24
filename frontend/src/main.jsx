@@ -5,6 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import './index.css';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
+import { BackendReadyProvider } from './context/BackendReadyContext.jsx';
+import ConnectionIndicator from './components/ConnectionIndicator';
 import App from './App';
 import { initCapacitor } from './utils/capacitor';
 import { seedOfflineData } from './services/offlineStorage';
@@ -17,10 +19,15 @@ createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       {/* reducedMotion="user" respecte prefers-reduced-motion (audit P1 a11y) */}
       <MotionConfig reducedMotion="user">
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        {/* Phase 1 : health check /health central AVANT données et WebSocket */}
+        <BackendReadyProvider>
+          <ConnectionIndicator />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </BackendReadyProvider>
       </MotionConfig>
     </ErrorBoundary>
   </StrictMode>,
 );
+

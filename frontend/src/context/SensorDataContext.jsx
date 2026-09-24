@@ -16,6 +16,7 @@ import {
 } from '../services/sensorProviders';
 import { fetchSensorMode, fetchSensorDashboard } from '../services/sensorApi';
 import { fetchIncidents } from '../services/api';
+import { useBackendReady } from '../hooks/useBackendReady.js';
 
 /** Au-delà de ce délai sans mise à jour en ligne, les données sont "anciennes". */
 const STALE_MS = 90000;
@@ -77,6 +78,11 @@ export function SensorDataProvider({ children, simulatedTime = null, demo = fals
   const buildingsRef = useRef([]);
   const wsCleanupRef = useRef(null);
 
+  // Phase 1 : aucune donnée métier ni WebSocket tant que /health n'a pas réussi.
+  //   ready   → backend READY (phase 2 autorisée)
+  //   settled → prêt OU épuisement des retries (fallback cache/offline autorisé)
+  const { ready, settled } = useBackendReady();
+
   // Horloge de fraîcheur — re-rendu léger toutes les 15 s pour recalculer `stale`
   useEffect(() => {
     const t = setInterval(() => setNowTick(Date.now()), 15000);
@@ -135,6 +141,9 @@ export function SensorDataProvider({ children, simulatedTime = null, demo = fals
   }, []);
 
   useEffect(() => {
+    // Phase 2 — chargement des données UNIQUEMENT après readiness backend
+    // (health OK) ou abandon explicite des retries (fallback cache offline).
+    if (!settled) return undefined;
     let cancelled = false;
     (async () => {
       const { buildings: locs, offline: off } = await loadBuildings();
@@ -147,7 +156,7 @@ export function SensorDataProvider({ children, simulatedTime = null, demo = fals
     return () => {
       cancelled = true;
     };
-  }, [fetchLive, refreshMeta]);
+  }, [settled, fetchLive, refreshMeta]);
 
   useEffect(() => {
     if (demo) {
@@ -155,6 +164,9 @@ export function SensorDataProvider({ children, simulatedTime = null, demo = fals
       fetchLive(buildingsRef.current);
       return undefined;
     }
+
+    // Le polling et le WebSocket ne démarrent qu'après /health OK.
+    if (!ready) return undefined;
 
     fetchLive(buildingsRef.current);
     const interval = setInterval(() => fetchLive(buildingsRef.current), 30000);
@@ -185,7 +197,7 @@ export function SensorDataProvider({ children, simulatedTime = null, demo = fals
       wsCleanupRef.current?.();
       wsCleanupRef.current = null;
     };
-  }, [demo, simulatedTime, fetchLive, refreshMeta, buildings.length, offline]);
+  }, [demo, simulatedTime, fetchLive, refreshMeta, buildings.length, offline, ready]);
 
   const occupancy = useMemo(
     () => enrichOccupancy(occupancyRaw, buildings),

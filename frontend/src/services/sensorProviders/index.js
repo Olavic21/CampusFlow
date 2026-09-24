@@ -119,51 +119,150 @@ export function fetchOccupancySimulation(buildings, simulatedTime) {
   };
 }
 
-/** Provider WebSocket — connexion /ws/live-occupancy/. */
+/** Backoff de reconnexion WebSocket : 1 s, 2 s, 5 s, 10 s, 20 s, 30 s puis plafond 30 s. */
+const WS_BACKOFF_MS = [1000, 2000, 5000, 10000, 20000, 30000];
+
+/**
+ * Provider WebSocket temps réel — UNE SEULE connexion par provider.
+ * Résilience :
+ *  - backoff exponentiel plafonné + jitter à chaque échec/déconnexion
+ *  - retryCount remis à 0 après une ouverture réussie
+ *  - anti-duplication : jamais de 2e socket si CONNECTING/OPEN
+ *  - online/offline : pause des retries hors ligne, reconnexion immédiate au retour
+ *  - cleanup complet : timers, listeners et callbacks retirés au démontage
+ *  - n'est appelé qu'après readiness backend (géré par SensorDataProvider)
+ */
 export function createWebSocketProvider(buildings, onUpdate, onError) {
   let ws = null;
   let closed = false;
-  let connectTimer = null;
+  let retryCount = 0;
   let retryTimer = null;
+
+  const clearRetry = () => {
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
+  };
+
+  const detach = (socket) => {
+    socket.onopen = null;
+    socket.onmessage = null;
+    socket.onerror = null;
+    socket.onclose = null;
+  };
+
+  const scheduleReconnect = () => {
+    if (closed || retryTimer) return;
+    // Hors ligne : on n'agresse pas le réseau — l'événement `online` relancera.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+    const base = WS_BACKOFF_MS[Math.min(retryCount, WS_BACKOFF_MS.length - 1)];
+    const jitter = base * 0.2 * (Math.random() * 2 - 1);
+    const delay = Math.max(500, Math.round(base + jitter));
+    retryCount += 1;
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      connect();
+    }, delay);
+  };
 
   const connect = () => {
     if (closed) return;
-    connectTimer = setTimeout(() => {
-      connectTimer = null;
-      if (closed) return;
-      try {
-        ws = new WebSocket(getWebSocketUrl());
-        ws.onmessage = (event) => {
-          try {
-            const msg = JSON.parse(event.data);
-            if (msg.type === 'ping') return;
-            if (msg.type === 'occupancy_update' || msg.type === 'occupancy_snapshot') {
-              const readings = msg.readings || [];
-              if (readings.length) {
-                onUpdate(mapWsReadingsToOccupancy(readings, buildings));
-              }
-            }
-          } catch {
-            /* ignore */
-          }
-        };
-        ws.onerror = () => onError?.();
-        ws.onclose = () => {
-          if (!closed) retryTimer = setTimeout(connect, 5000);
-        };
-      } catch {
-        onError?.();
+    // Anti-duplication stricte : une seule socket par fonctionnalité.
+    if (
+      ws &&
+      (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)
+    ) {
+      return;
+    }
+    clearRetry();
+    let socket;
+    try {
+      socket = new WebSocket(getWebSocketUrl());
+    } catch {
+      onError?.();
+      scheduleReconnect();
+      return;
+    }
+    ws = socket;
+    socket.onopen = () => {
+      if (closed || socket !== ws) {
+        try {
+          socket.close();
+        } catch {
+          /* ignore */
+        }
+        return;
       }
-    }, 0);
+      retryCount = 0; // reconnexion réussie → reset du backoff
+    };
+    socket.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'ping') return;
+        if (msg.type === 'occupancy_update' || msg.type === 'occupancy_snapshot') {
+          const readings = msg.readings || [];
+          if (readings.length) {
+            onUpdate(mapWsReadingsToOccupancy(readings, buildings));
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    socket.onerror = () => {
+      if (!closed) onError?.();
+    };
+    socket.onclose = () => {
+      if (socket !== ws) return;
+      detach(socket);
+      ws = null;
+      if (closed) return;
+      scheduleReconnect();
+    };
   };
+
+  const handleOnline = () => {
+    if (closed) return;
+    retryCount = 0;
+    clearRetry();
+    connect();
+  };
+
+  const handleOffline = () => {
+    if (closed) return;
+    clearRetry();
+    try {
+      ws?.close();
+    } catch {
+      /* ignore */
+    }
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+  }
 
   connect();
 
   return () => {
     closed = true;
-    if (connectTimer) clearTimeout(connectTimer);
-    if (retryTimer) clearTimeout(retryTimer);
-    ws?.close();
+    clearRetry();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    }
+    if (ws) {
+      const socket = ws;
+      ws = null;
+      detach(socket);
+      try {
+        socket.close();
+      } catch {
+        /* ignore */
+      }
+    }
   };
 }
 
